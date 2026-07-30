@@ -1,6 +1,8 @@
 const  mongoose = require("mongoose");
 const asyncHandler = require("../middlewares/asyncHandler");
 const ApiError = require("../utils/ApiError")
+const Product = require("../models/Product")
+const Wishlist = require("../models/Wishlist")
 
 
 exports.addToWishlist = asyncHandler(async (req, res) => {

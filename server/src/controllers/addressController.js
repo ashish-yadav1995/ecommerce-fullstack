@@ -21,6 +21,8 @@ exports.addAddress = asyncHandler(async (req, res) => {
     isDefault,
   } = req.body;
 
+  console.log("1")
+
   // Validate User ID
   if (!mongoose.Types.ObjectId.isValid(user)) {
     throw new ApiError(400, "Invalid User ID");

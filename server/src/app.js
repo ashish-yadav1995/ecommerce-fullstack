@@ -6,6 +6,7 @@ const productRoutes = require("./routes/productRoute");
 const cartRoutes = require("./routes/cartRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const addressRoutes = require("./routes/addressRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 const app = express();
 
 app.use(express.json());
@@ -20,7 +21,9 @@ app.use("/api/v1/cart", cartRoutes);
 
 app.use("/api/v1/wishlist", wishlistRoutes);
 
-app.use("api/vi/address", addressRoutes);
+app.use("/api/v1/address", addressRoutes);
+
+app.use("/api/v1/order", orderRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "API Running" });
