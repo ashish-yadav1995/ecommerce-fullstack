@@ -1,0 +1,165 @@
+const mongoose = require("mongoose");
+const User = require("../models/User");
+const asyncHandler = require("../middlewares/asyncHandler");
+const ApiError = require("../utils/ApiError");
+
+exports.getUserProfile = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Validate User ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid User ID");
+  }
+
+  const user = await User.findById(id).select("-password -otp");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Profile fetched successfully",
+    data: user,
+  });
+});
+
+
+exports.updateUserProfile = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, email } = req.body;
+
+  // Validate User ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid User ID");
+  }
+
+  // Find User
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Update Name
+  if (name !== undefined) {
+    user.name = name;
+  }
+
+  // Update Email
+  if (email !== undefined) {
+    // Check if another user already has this email
+    const existingUser = await User.findOne({
+      email,
+      _id: { $ne: id },
+    });
+
+    if (existingUser) {
+      throw new ApiError(400, "Email already in use");
+    }
+
+    user.email = email;
+  }
+
+  await user.save();
+
+  // Password response me nahi bhejna
+  console.log("User after update:", user);
+  const userData = user.toObject();
+  delete userData.password;
+  delete userData.otp;
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    data: userData,
+  });
+});
+
+exports.changePassword = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const { currentPassword, newPassword } = req.body;
+
+  // Validate User ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid User ID");
+  }
+
+  // Validate fields
+  if (!currentPassword || !newPassword) {
+    throw new ApiError(400, "Current password and new password are required");
+  }
+
+  // New password current password se different hona chahiye
+  if (currentPassword === newPassword) {
+    throw new ApiError(400, "New password must be different from the current password")
+  }
+
+  // Password length
+  if (newPassword.length < 6) {
+    throw new ApiError(400, "New password must be at least 6 characters");
+  }
+
+  // Find user
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Check current password
+  const isPasswordCorrect = await bcrypt.compare(
+    currentPassword,
+    user.password,
+  );
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Current password is incorrect");
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Save new password
+  user.password = hashedPassword;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password changed successfully",
+  });
+});
+
+
+exports.deactivateAccount = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Validate User ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(400, "Invalid User ID");
+    }
+
+    // Find User
+    const user = await User.findById(id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // Already inactive
+    if (!user.isActive) {
+        throw new ApiError(400, "Account is already deactivated");
+    }
+
+    // Deactivate account
+    user.isActive = false;
+
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Account deactivated successfully",
+    });
+});

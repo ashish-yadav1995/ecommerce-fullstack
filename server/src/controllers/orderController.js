@@ -189,12 +189,10 @@ if (order.orderStatus === "Shipped" || order.orderStatus === "Delivered" || orde
   }
 
 // if (order.orderStatus === "Pending" || order.orderStatus === "Confirmed" || order.orderStatus === "Processing") {
-    
-  order.orderStatus = "Cancelled"
+
+order.orderStatus = "Cancelled"
 
   order.save();
-
-  
 
   res.status(200).json({
     success:true,
@@ -203,4 +201,86 @@ if (order.orderStatus === "Shipped" || order.orderStatus === "Delivered" || orde
   })
 
   // }
+});
+
+exports.updateOrderStatus = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { orderStatus } = req.body;
+
+    // Validate Order ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(400, "Invalid Order ID");
+    }
+
+    // Validate Status
+    if (!orderStatus) {
+        throw new ApiError(400, "Order status is required");
+    }
+
+    const validStatuses = [
+        "Pending",
+        "Confirmed",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+    ];
+
+    if (!validStatuses.includes(orderStatus)) {
+        throw new ApiError(400, "Invalid order status");
+    }
+
+    // Find Order
+    const order = await Order.findById(id);
+
+    if (!order) {
+        throw new ApiError(404, "Order not found");
+    }
+
+    // Cancelled order should not be updated
+    if (order.orderStatus === "Cancelled") {
+        throw new ApiError(400, "Cancelled order cannot be updated");
+    }
+
+    // Delivered order should not be updated
+    if (order.orderStatus === "Delivered") {
+        throw new ApiError(400, "Delivered order cannot be updated");
+    }
+
+    // Update status
+    order.orderStatus = orderStatus;
+
+    // If delivered
+    if (orderStatus === "Delivered") {
+        order.isDelivered = true;
+        order.deliveredAt = new Date();
+    }
+
+    await order.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Order status updated successfully",
+        data: order,
+    });
+});
+
+exports.getAllOrders = asyncHandler(async (req, res) => {
+    const orders = await Order.find()
+        .populate({
+            path: "user",
+            select: "name email",
+        })
+        .populate({
+            path: "shippingAddress",
+            select: "fullName mobile city state postalCode",
+        })
+        .sort({ createdAt: -1 });
+
+    res.status(200).json({
+        success: true,
+        message: "All orders fetched successfully",
+        totalOrders: orders.length,
+        data: orders,
+    });
 });

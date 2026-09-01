@@ -5,6 +5,7 @@ const {
   getMyOrders,
   getOrderById,
   cancelOrder,
+  updateOrderStatus,
 } = require("../controllers/orderController");
 
 router.post("/", placeOrder);
@@ -15,7 +16,7 @@ router.get("/:userId", getMyOrders);
 
 router.patch("/:id/cancel", cancelOrder);
 
-// router.patch("/:id/status", updateOrderStatus);
+router.patch("/:id/status", updateOrderStatus);
 
 // router.get("/admin/all", getAllOrders);
 
