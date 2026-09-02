@@ -15,6 +15,6 @@ router.put("/:id", updateUserProfile);
 
 router.put("/:id/change-password", changePassword);
 
-// router.patch("/:id/deactivate", deactivateAccount);
+router.patch("/:id/deactivate", deactivateAccount);
 
 module.exports = router;
