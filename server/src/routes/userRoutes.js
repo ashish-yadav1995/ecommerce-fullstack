@@ -2,6 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 
+const { protect } =  require("../middlewares/authMiddleware")
+
 const {
   getUserProfile,
   updateUserProfile,
@@ -9,12 +11,12 @@ const {
   deactivateAccount,
 } = require("../controllers/userController");
 
-router.get("/:id", getUserProfile);
+router.get("/profile", protect, getUserProfile);
 
-router.put("/:id", updateUserProfile);
+router.put("/profile", protect, updateUserProfile);
 
-router.put("/:id/change-password", changePassword);
+router.put("/profile/change-password", protect, changePassword);
 
-router.patch("/:id/deactivate", deactivateAccount);
+router.patch("/profile/deactivate", protect, deactivateAccount);
 
 module.exports = router;

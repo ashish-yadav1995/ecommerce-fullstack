@@ -4,14 +4,16 @@ const asyncHandler = require("../middlewares/asyncHandler");
 const ApiError = require("../utils/ApiError");
 
 exports.getUserProfile = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  // const { id } = req.params;
+  const user_Id = req.user._id; // Authenticated user ID
 
   // Validate User ID
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  console.log("Fetching profile for user ID:", user_Id);
+  if (!mongoose.Types.ObjectId.isValid(user_Id)) {
     throw new ApiError(400, "Invalid User ID");
   }
 
-  const user = await User.findById(id).select("-password -otp");
+  const user = await User.findById(user_Id).select("-password -otp");
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -24,18 +26,18 @@ exports.getUserProfile = asyncHandler(async (req, res) => {
   });
 });
 
-
 exports.updateUserProfile = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  // const { id } = req.params;
+  const user_Id = req.user._id; // Authenticated user ID
   const { name, email } = req.body;
 
   // Validate User ID
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(user_Id)) {
     throw new ApiError(400, "Invalid User ID");
   }
 
   // Find User
-  const user = await User.findById(id);
+  const user = await User.findById(user_Id);
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -51,7 +53,7 @@ exports.updateUserProfile = asyncHandler(async (req, res) => {
     // Check if another user already has this email
     const existingUser = await User.findOne({
       email,
-      _id: { $ne: id },
+      _id: { $ne: user_Id },
     });
 
     if (existingUser) {
@@ -77,12 +79,13 @@ exports.updateUserProfile = asyncHandler(async (req, res) => {
 });
 
 exports.changePassword = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  // const { id } = req.params;
+  const user_Id = req.user._id; // Authenticated user ID
 
   const { currentPassword, newPassword } = req.body;
 
   // Validate User ID
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!mongoose.Types.ObjectId.isValid(user_Id)) {
     throw new ApiError(400, "Invalid User ID");
   }
 
@@ -93,7 +96,10 @@ exports.changePassword = asyncHandler(async (req, res) => {
 
   // New password current password se different hona chahiye
   if (currentPassword === newPassword) {
-    throw new ApiError(400, "New password must be different from the current password")
+    throw new ApiError(
+      400,
+      "New password must be different from the current password",
+    );
   }
 
   // Password length
@@ -102,7 +108,7 @@ exports.changePassword = asyncHandler(async (req, res) => {
   }
 
   // Find user
-  const user = await User.findById(id);
+  const user = await User.findById(user_Id);
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -132,34 +138,34 @@ exports.changePassword = asyncHandler(async (req, res) => {
   });
 });
 
-
 exports.deactivateAccount = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  // const { id } = req.params;
+  const user_Id = req.user._id; // Authenticated user ID
 
-    // Validate User ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApiError(400, "Invalid User ID");
-    }
+  // Validate User ID
+  if (!mongoose.Types.ObjectId.isValid(user_Id)) {
+    throw new ApiError(400, "Invalid User ID");
+  }
 
-    // Find User
-    const user = await User.findById(id);
+  // Find User
+  const user = await User.findById(user_Id);
 
-    if (!user) {
-        throw new ApiError(404, "User not found");
-    }
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
 
-    // Already inactive
-    if (!user.isActive) {
-        throw new ApiError(400, "Account is already deactivated");
-    }
+  // Already inactive
+  if (!user.isActive) {
+    throw new ApiError(400, "Account is already deactivated");
+  }
 
-    // Deactivate account
-    user.isActive = false;
+  // Deactivate account
+  user.isActive = false;
 
-    await user.save();
+  await user.save();
 
-    res.status(200).json({
-        success: true,
-        message: "Account deactivated successfully",
-    });
+  res.status(200).json({
+    success: true,
+    message: "Account deactivated successfully",
+  });
 });

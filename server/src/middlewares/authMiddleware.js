@@ -58,6 +58,7 @@ const protect = asyncHandler(async (req, res, next) => {
     req.user = user;
 
     // 7. Next middleware/controller
+    console.log("User authenticated:", user.email);
     next();
 });
 

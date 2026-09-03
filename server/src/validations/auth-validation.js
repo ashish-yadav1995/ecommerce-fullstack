@@ -17,6 +17,18 @@ const registerValidation = [
     .withMessage("Password must be at least 6 characters"),
 ];
 
+// Login Validation Rules
+const loginValidation = [
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Please enter a valid email"), 
+
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required"),
+];
+
 // Validation Error Middleware
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -31,7 +43,9 @@ const validate = (req, res, next) => {
   next();
 };
 
+
 module.exports = {
   registerValidation,
+  loginValidation,
   validate,
 };
