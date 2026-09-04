@@ -8,7 +8,8 @@ const asyncHandler = require("../middlewares/asyncHandler");
 const ApiError = require("../utils/ApiError");
 
 exports.addToCart = asyncHandler(async (req, res) => {
-  const { user, product, quantity = 1 } = req.body;
+  const user = req.user._id; // Authenticated user ID
+  const { product, quantity = 1 } = req.body;
 
   // Validate IDs
   if (!mongoose.Types.ObjectId.isValid(user)) {
@@ -80,7 +81,8 @@ exports.addToCart = asyncHandler(async (req, res) => {
 });
 
 exports.getCart = asyncHandler(async (req, res) => {
-  const userId = req.params.id;
+  // const userId = req.params.id;
+  const userId = req.user._id; // Authenticated user ID
 
   // Validate User ID
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -211,7 +213,8 @@ exports.removeCartItem = asyncHandler(async (req, res) => {
 
 exports.clearCart = asyncHandler(async (req, res) => {
 
-    const { user } = req.body;
+    // const { user } = req.body;
+    const user = req.user._id; // Authenticated user ID
 
     // Validate User ID
     if (!mongoose.Types.ObjectId.isValid(user)) {

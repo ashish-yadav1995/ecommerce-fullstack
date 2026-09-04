@@ -7,7 +7,8 @@ const Wishlist = require("../models/Wishlist")
 
 exports.addToWishlist = asyncHandler(async (req, res) => {
 
-    const { user, product } = req.body;
+    const { product } = req.body;
+    const user = req.user._id; // Authenticated user ID
 
     // Validate User ID
     if (!mongoose.Types.ObjectId.isValid(user)) {
@@ -57,7 +58,8 @@ exports.addToWishlist = asyncHandler(async (req, res) => {
 
 exports.getWishlist = asyncHandler(async (req, res) => {
 
-    const { userId } = req.params;
+    // const { userId } = req.params;
+    const userId = req.user._id; // Authenticated user ID
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new ApiError(400, "Invalid User ID");
@@ -107,7 +109,8 @@ exports.removeWishlistItem = asyncHandler(async (req, res) => {
 
 exports.clearWishlist = asyncHandler(async (req, res) => {
 
-    const { user } = req.body;
+    // const { user } = req.body;
+    const user = req.user._id; // Authenticated user ID
 
     if (!mongoose.Types.ObjectId.isValid(user)) {
         throw new ApiError(400, "Invalid User ID");

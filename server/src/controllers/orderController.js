@@ -8,7 +8,9 @@ const Cart = require("../models/Cart")
 
 
 exports.placeOrder = asyncHandler(async (req, res) => {
-  const { user, shippingAddress, paymentMethod } = req.body;
+
+  const { shippingAddress, paymentMethod } = req.body;
+  const user = req.user._id; // Authenticated user ID
 
   // Validate User ID
   if (!mongoose.Types.ObjectId.isValid(user)) {
@@ -105,7 +107,8 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 });
 
 exports.getMyOrders = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+  // const { userId } = req.params;
+  const userId = req.user._id; // Authenticated user ID
 
   // Validate User ID
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -173,6 +176,7 @@ exports.getOrderById = asyncHandler(async (req, res) => {
 exports.cancelOrder = asyncHandler(async(req,res)=>{
 
 const { id } = req.params;
+const user = req.user._id; // Authenticated user ID
 
   if (!mongoose.Types.ObjectId.isValid(user)) {
     throw new ApiError(400, "Invalid User ID");

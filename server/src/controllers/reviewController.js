@@ -7,7 +7,8 @@ const asyncHandler = require("../middlewares/asyncHandler");
 const ApiError = require("../utils/ApiError");
 
 exports.addReview = asyncHandler(async (req, res) => {
-    const { user, product, rating, comment } = req.body;
+    const user = req.user._id; // Authenticated user ID
+    const { product, rating, comment } = req.body;
 
     // Validate User ID
     if (!mongoose.Types.ObjectId.isValid(user)) {

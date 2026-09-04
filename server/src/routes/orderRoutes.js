@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middlewares/authMiddleware");
+const { authorize } = require("../middlewares/roleMiddleware");
 const {
   placeOrder,
   getMyOrders,
@@ -32,6 +33,6 @@ router.patch("/:id/cancel", protect, cancelOrder);
 
 router.patch("/:id/status", protect, updateOrderStatus);
 
-router.get("/admin/all", protect, getAllOrders);
+router.get("/admin/all", protect, authorize("admin"), getAllOrders);
 
 module.exports = router;

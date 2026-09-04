@@ -21,7 +21,6 @@ exports.addAddress = asyncHandler(async (req, res) => {
     isDefault,
   } = req.body;
 
-  console.log("1")
 
   // Validate User ID
   if (!mongoose.Types.ObjectId.isValid(user)) {
@@ -77,13 +76,14 @@ exports.addAddress = asyncHandler(async (req, res) => {
 });
 
 exports.getAddresses = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+  // const { userId } = req.params;
+  const user_Id = req.user._id; // Authenticated user ID
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
+  if (!mongoose.Types.ObjectId.isValid(user_Id)) {
     throw new ApiError(400, "Invalid User ID");
   }
 
-  const addresses = await Address.find({ user: userId }).sort({
+  const addresses = await Address.find({ user: user_Id }).sort({
     isDefault: -1,
     createdAt: -1,
   });
