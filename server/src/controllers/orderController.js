@@ -4,11 +4,9 @@ const ApiError = require("../utils/ApiError");
 const Product = require("../models/Product");
 const Address = require("../models/Address");
 const Order = require("../models/Order");
-const Cart = require("../models/Cart")
-
+const Cart = require("../models/Cart");
 
 exports.placeOrder = asyncHandler(async (req, res) => {
-
   const { shippingAddress, paymentMethod } = req.body;
   const user = req.user._id; // Authenticated user ID
 
@@ -54,6 +52,7 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 
     orderItems.push({
       product: product._id,
+      seller: product.seller,
       name: product.name,
       image: product.images[0] || "",
       price,
@@ -138,153 +137,237 @@ exports.getMyOrders = asyncHandler(async (req, res) => {
 });
 
 exports.getOrderById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-    const { id } = req.params;
+  // Validate Order ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid Order ID");
+  }
 
-    // Validate Order ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApiError(400, "Invalid Order ID");
-    }
-
-    // Find Order
-    const order = await Order.findById(id)
-        .populate({
-            path: "shippingAddress",
-            select: "-__v",
-        })
-        .populate({
-            path: "user",
-            select: "name email",
-        })
-        .populate({
-            path: "orderItems.product",
-            select: "name slug brand images",
-        });
-
-    if (!order) {
-        throw new ApiError(404, "Order not found");
-    }
-
-    res.status(200).json({
-        success: true,
-        message: "Order fetched successfully",
-        data: order,
+  // Find Order
+  const order = await Order.findById(id)
+    .populate({
+      path: "shippingAddress",
+      select: "-__v",
+    })
+    .populate({
+      path: "user",
+      select: "name email",
+    })
+    .populate({
+      path: "orderItems.product",
+      select: "name slug brand images",
     });
 
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Order fetched successfully",
+    data: order,
+  });
 });
 
-exports.cancelOrder = asyncHandler(async(req,res)=>{
-
-const { id } = req.params;
-const user = req.user._id; // Authenticated user ID
+exports.cancelOrder = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const user = req.user._id; // Authenticated user ID
 
   if (!mongoose.Types.ObjectId.isValid(user)) {
     throw new ApiError(400, "Invalid User ID");
   }
 
-  const order = await Order.findById(id)
+  const order = await Order.findById(id);
 
-   if (!order) {
+  if (!order) {
     throw new ApiError(400, "order not found");
   }
 
-if (order.orderStatus === "Shipped" || order.orderStatus === "Delivered" || order.orderStatus === "Cancelled") {
+  if (
+    order.orderStatus === "Shipped" ||
+    order.orderStatus === "Delivered" ||
+    order.orderStatus === "Cancelled"
+  ) {
     throw new ApiError(400, "you can not cancelled this product");
   }
 
-// if (order.orderStatus === "Pending" || order.orderStatus === "Confirmed" || order.orderStatus === "Processing") {
+  // if (order.orderStatus === "Pending" || order.orderStatus === "Confirmed" || order.orderStatus === "Processing") {
 
-order.orderStatus = "Cancelled"
+  order.orderStatus = "Cancelled";
 
   order.save();
 
   res.status(200).json({
-    success:true,
-    message:"order cancel successfully!",
-    data:order
-  })
+    success: true,
+    message: "order cancel successfully!",
+    data: order,
+  });
 
   // }
 });
 
 exports.updateOrderStatus = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { orderStatus } = req.body;
+  const { id } = req.params;
+  const { orderStatus } = req.body;
 
-    // Validate Order ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApiError(400, "Invalid Order ID");
-    }
+  // Validate Order ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid Order ID");
+  }
 
-    // Validate Status
-    if (!orderStatus) {
-        throw new ApiError(400, "Order status is required");
-    }
+  // Validate Status
+  if (!orderStatus) {
+    throw new ApiError(400, "Order status is required");
+  }
 
-    const validStatuses = [
-        "Pending",
-        "Confirmed",
-        "Processing",
-        "Shipped",
-        "Delivered",
-        "Cancelled",
-    ];
+  const validStatuses = [
+    "Pending",
+    "Confirmed",
+    "Processing",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+  ];
 
-    if (!validStatuses.includes(orderStatus)) {
-        throw new ApiError(400, "Invalid order status");
-    }
+  if (!validStatuses.includes(orderStatus)) {
+    throw new ApiError(400, "Invalid order status");
+  }
 
-    // Find Order
-    const order = await Order.findById(id);
+  // Find Order
+  const order = await Order.findById(id);
 
-    if (!order) {
-        throw new ApiError(404, "Order not found");
-    }
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
 
-    // Cancelled order should not be updated
-    if (order.orderStatus === "Cancelled") {
-        throw new ApiError(400, "Cancelled order cannot be updated");
-    }
+  // Cancelled order should not be updated
+  if (order.orderStatus === "Cancelled") {
+    throw new ApiError(400, "Cancelled order cannot be updated");
+  }
 
-    // Delivered order should not be updated
-    if (order.orderStatus === "Delivered") {
-        throw new ApiError(400, "Delivered order cannot be updated");
-    }
+  // Delivered order should not be updated
+  if (order.orderStatus === "Delivered") {
+    throw new ApiError(400, "Delivered order cannot be updated");
+  }
 
-    // Update status
-    order.orderStatus = orderStatus;
+  // Update status
+  order.orderStatus = orderStatus;
 
-    // If delivered
-    if (orderStatus === "Delivered") {
-        order.isDelivered = true;
-        order.deliveredAt = new Date();
-    }
+  // If delivered
+  if (orderStatus === "Delivered") {
+    order.isDelivered = true;
+    order.deliveredAt = new Date();
+  }
 
-    await order.save();
+  await order.save();
 
-    res.status(200).json({
-        success: true,
-        message: "Order status updated successfully",
-        data: order,
-    });
+  res.status(200).json({
+    success: true,
+    message: "Order status updated successfully",
+    data: order,
+  });
 });
 
 exports.getAllOrders = asyncHandler(async (req, res) => {
-    const orders = await Order.find()
-        .populate({
-            path: "user",
-            select: "name email",
-        })
-        .populate({
-            path: "shippingAddress",
-            select: "fullName mobile city state postalCode",
-        })
-        .sort({ createdAt: -1 });
+  const orders = await Order.find()
+    .populate({
+      path: "user",
+      select: "name email",
+    })
+    .populate({
+      path: "shippingAddress",
+      select: "fullName mobile city state postalCode",
+    })
+    .sort({ createdAt: -1 });
 
-    res.status(200).json({
-        success: true,
-        message: "All orders fetched successfully",
-        totalOrders: orders.length,
-        data: orders,
-    });
+  res.status(200).json({
+    success: true,
+    message: "All orders fetched successfully",
+    totalOrders: orders.length,
+    data: orders,
+  });
+});
+
+exports.getSellerOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({
+    "orderItems.seller": req.user._id,
+  })
+    .populate("user", "name email")
+    .populate("orderItems.product", "name images");
+
+  const sellerOrders = orders.map((order) => {
+    const sellerItems = order.orderItems.filter(
+      (item) => item.seller.toString() === req.user._id.toString(),
+    );
+
+    return {
+      _id: order._id,
+      user: order.user,
+      shippingAddress: order.shippingAddress,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      orderStatus: order.orderStatus,
+      createdAt: order.createdAt,
+
+      // ⭐ Only seller's products
+      orderItems: sellerItems,
+
+      // ⭐ Seller ke items ka total
+      itemsPrice: sellerItems.reduce((sum, item) => sum + item.totalPrice, 0),
+    };
+  });
+
+  res.status(200).json({
+    success: true,
+    count: sellerOrders.length,
+    data: sellerOrders,
+  });
+});
+
+exports.updateSellerOrderStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  const allowedStatus = [
+    "Pending",
+    "Confirmed",
+    "Processing",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+  ];
+
+  if (!allowedStatus.includes(status)) {
+    throw new ApiError(400, "Invalid order status");
+  }
+
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  // Check seller's items
+  const sellerItems = order.orderItems.filter(
+    (item) => item.seller.toString() === req.user._id.toString(),
+  );
+
+  if (sellerItems.length === 0) {
+    throw new ApiError(403, "You are not allowed to update this order");
+  }
+
+  order.orderStatus = status;
+
+  if (status === "Delivered") {
+    order.isDelivered = true;
+    order.deliveredAt = new Date();
+  }
+
+  await order.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Order status updated successfully",
+    data: order,
+  });
 });

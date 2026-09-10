@@ -110,6 +110,11 @@ exports.updateAddress = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Address not found");
     }
 
+    // Check Ownership
+    if (address.user.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not the owner of this address");
+    }
+
     const {
         fullName,
         mobile,
@@ -172,6 +177,11 @@ exports.deleteAddress = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Address not found");
     }
 
+    // Check Ownership
+    if(address.user.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "You are not the owner of this address to delete it");
+    }
+
     await Address.findByIdAndDelete(id);
 
     res.status(200).json({
@@ -195,6 +205,12 @@ exports.setDefaultAddress = asyncHandler(async (req, res) => {
     if (!address) {
         throw new ApiError(404, "Address not found");
     }
+
+     //  Check Ownership
+     if (address.user.toString() !== userId.toString()) {
+      throw new ApiError(403, "You are not authorized to modify this address");
+      }
+
 
     await Address.updateMany(
         { user: address.user },

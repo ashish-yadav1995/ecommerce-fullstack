@@ -7,219 +7,234 @@ const asyncHandler = require("../middlewares/asyncHandler");
 const ApiError = require("../utils/ApiError");
 
 exports.addReview = asyncHandler(async (req, res) => {
-    const user = req.user._id; // Authenticated user ID
-    const { product, rating, comment } = req.body;
+  const user = req.user._id; // Authenticated user ID
+  const { product, rating, comment } = req.body;
 
-    // Validate User ID
-    if (!mongoose.Types.ObjectId.isValid(user)) {
-        throw new ApiError(400, "Invalid User ID");
-    }
+  // Validate User ID
+  if (!mongoose.Types.ObjectId.isValid(user)) {
+    throw new ApiError(400, "Invalid User ID");
+  }
 
-    // Validate Product ID
-    if (!mongoose.Types.ObjectId.isValid(product)) {
-        throw new ApiError(400, "Invalid Product ID");
-    }
+  // Validate Product ID
+  if (!mongoose.Types.ObjectId.isValid(product)) {
+    throw new ApiError(400, "Invalid Product ID");
+  }
+  // Check User Role
+  if (req.user.role !== "customer") {
+    throw new ApiError(403, "Only customers can add reviews");
+  }
 
-    // Validate Required Fields
-    if (!rating || !comment) {
-        throw new ApiError(400, "Rating and comment are required");
-    }
+  // Validate Required Fields
+  if (!rating || !comment) {
+    throw new ApiError(400, "Rating and comment are required");
+  }
 
-    // Validate Rating
-    if (rating < 1 || rating > 5) {
-        throw new ApiError(400, "Rating must be between 1 and 5");
-    }
+  // Validate Rating
+  if (rating < 1 || rating > 5) {
+    throw new ApiError(400, "Rating must be between 1 and 5");
+  }
 
-    // Check Product Exists
-    const existingProduct = await Product.findById(product);
+  // Check Product Exists
+  const existingProduct = await Product.findById(product);
 
-    if (!existingProduct) {
-        throw new ApiError(404, "Product not found");
-    }
+  if (!existingProduct) {
+    throw new ApiError(404, "Product not found");
+  }
 
-    // Check Duplicate Review
-    const existingReview = await Review.findOne({
-        user,
-        product,
-    });
+  // Check Duplicate Review
+  const existingReview = await Review.findOne({
+    user,
+    product,
+  });
 
-    if (existingReview) {
-        throw new ApiError(
-            400,
-            "You have already reviewed this product"
-        );
-    }
+  if (existingReview) {
+    throw new ApiError(400, "You have already reviewed this product");
+  }
 
-    // Create Review
-    const review = await Review.create({
-        user,
-        product,
-        rating,
-        comment,
-    });
+  // Check if the user has purchased the product
+  const hasPurchasedAndDelivered = await Order.findOne({
+    user: user, // 1. Order isi user ka hona chahiye
+    orderStatus: "Delivered", // 2. orderStatus badal kar "Delivered" ho chuka ho
+    "orderItems.product": product, // 3. orderItems array me ye specific product ID honi chahiye
+  });
 
-    // Get All Reviews of Product
-    const reviews = await Review.find({ product });
-
-    // Calculate Average Rating
-    const totalRating = reviews.reduce(
-        (sum, item) => sum + item.rating,
-        0
+  if (!hasPurchasedAndDelivered) {
+    throw new ApiError(
+      403,
+      "You can only review products that you have purchased and received.",
     );
+  }
 
-    existingProduct.numReviews = reviews.length;
+  // Create Review
+  const review = await Review.create({
+    user,
+    product,
+    rating,
+    comment,
+  });
 
-    existingProduct.averageRating =
-        totalRating / reviews.length;
+  // Get All Reviews of Product
+  const reviews = await Review.find({ product });
 
-    await existingProduct.save();
+  // Calculate Average Rating
+  const totalRating = reviews.reduce((sum, item) => sum + item.rating, 0);
 
-    res.status(201).json({
-        success: true,
-        message: "Review added successfully",
-        data: review,
-    });
+  existingProduct.numReviews = reviews.length;
+
+  existingProduct.averageRating = totalRating / reviews.length;
+
+  await existingProduct.save();
+
+  res.status(201).json({
+    success: true,
+    message: "Review added successfully",
+    data: review,
+  });
 });
 
 exports.getProductReviews = asyncHandler(async (req, res) => {
-    const { productId } = req.params;
+  const { productId } = req.params;
 
-    // Validate Product ID
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-        throw new ApiError(400, "Invalid Product ID");
-    }
+  // Validate Product ID
+  if (!mongoose.Types.ObjectId.isValid(productId)) {
+    throw new ApiError(400, "Invalid Product ID");
+  }
 
-    // Check Product Exists
-    const product = await Product.findById(productId);
+  // Check Product Exists
+  const product = await Product.findById(productId);
 
-    if (!product) {
-        throw new ApiError(404, "Product not found");
-    }
+  if (!product) {
+    throw new ApiError(404, "Product not found");
+  }
 
-    // Get Reviews
-    const reviews = await Review.find({ product: productId })
-        .populate({
-            path: "user",
-            select: "name",
-        })
-        .sort({ createdAt: -1 });
+  // Get Reviews
+  const reviews = await Review.find({ product: productId })
+    .populate({
+      path: "user",
+      select: "name",
+    })
+    .sort({ createdAt: -1 });
 
-    res.status(200).json({
-        success: true,
-        message: "Product reviews fetched successfully",
-        totalReviews: reviews.length,
-        averageRating: product.averageRating,
-        data: reviews,
-    });
+  res.status(200).json({
+    success: true,
+    message: "Product reviews fetched successfully",
+    totalReviews: reviews.length,
+    averageRating: product.averageRating,
+    data: reviews,
+  });
 });
 
 exports.updateReview = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { rating, comment } = req.body;
+  const { id } = req.params;
+  const { rating, comment } = req.body;
 
-    // Validate Review ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApiError(400, "Invalid Review ID");
-    }
+  // Validate Review ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid Review ID");
+  }
 
-    // Find Review
-    const review = await Review.findById(id);
+  // Find Review
+  const review = await Review.findById(id);
 
-    if (!review) {
-        throw new ApiError(404, "Review not found");
-    }
+  if (!review) {
+    throw new ApiError(404, "Review not found");
+  }
 
-    // Validate Rating if provided
-    if (rating !== undefined && (rating < 1 || rating > 5)) {
-        throw new ApiError(400, "Rating must be between 1 and 5");
-    }
+  // 🔥 EXCLUSIVELY FOR UPDATE: Sirf check karo ki kya ye review isi login customer ka hai
+  if (review.user.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "You can only modify your own reviews");
+  }
 
-    // Update fields
-    if (rating !== undefined) {
-        review.rating = rating;
-    }
+  // Validate Rating if provided
+  if (rating !== undefined && (rating < 1 || rating > 5)) {
+    throw new ApiError(400, "Rating must be between 1 and 5");
+  }
 
-    if (comment !== undefined) {
-        review.comment = comment;
-    }
+  // Update fields
+  if (rating !== undefined) {
+    review.rating = rating;
+  }
 
-    await review.save();
+  if (comment !== undefined) {
+    review.comment = comment;
+  }
 
-    // Get all reviews again to recalculate rating
-    const reviews = await Review.find({
-        product: review.product,
-    });
+  await review.save();
 
-    const totalRating = reviews.reduce(
-        (sum, item) => sum + item.rating,
-        0
-    );
+  // Get all reviews again to recalculate rating
+  const reviews = await Review.find({
+    product: review.product,
+  });
 
-    // Update Product Rating
-    const product = await Product.findById(review.product);
+  const totalRating = reviews.reduce((sum, item) => sum + item.rating, 0);
 
-    if (product) {
-        product.numReviews = reviews.length;
-        product.averageRating = reviews.length
-            ? totalRating / reviews.length
-            : 0;
+  // Update Product Rating
+  const product = await Product.findById(review.product);
 
-        await product.save();
-    }
+  if (product) {
+    product.numReviews = reviews.length;
+    product.averageRating = reviews.length ? totalRating / reviews.length : 0;
 
-    res.status(200).json({
-        success: true,
-        message: "Review updated successfully",
-        data: review,
-    });
+    await product.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Review updated successfully",
+    data: review,
+  });
 });
 
 exports.deleteReview = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    // Validate Review ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApiError(400, "Invalid Review ID");
-    }
+  // Validate Review ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, "Invalid Review ID");
+  }
 
-    // Find Review
-    const review = await Review.findById(id);
+  // Find Review
+  const review = await Review.findById(id);
 
-    if (!review) {
-        throw new ApiError(404, "Review not found");
-    }
+  if (!review) {
+    throw new ApiError(404, "Review not found");
+  }
 
-    // Store Product ID before deleting review
-    const productId = review.product;
+  //  SECURITY CHECK (Admin + Ownership Validation)
 
-    // Delete Review
-    await Review.findByIdAndDelete(id);
+  if (
+    req.user.role !== "admin" &&
+    review.user.toString() !== req.user._id.toString()
+  ) {
+    throw new ApiError(403, "You are not allowed to delete this review");
+  }
 
-    // Get remaining reviews
-    const reviews = await Review.find({
-        product: productId,
-    });
+  // Store Product ID before deleting review
+  const productId = review.product;
 
-    const totalRating = reviews.reduce(
-        (sum, item) => sum + item.rating,
-        0
-    );
+  // Delete Review
+  await Review.findByIdAndDelete(id);
 
-    // Update Product Rating
-    const product = await Product.findById(productId);
+  // Get remaining reviews
+  const reviews = await Review.find({
+    product: productId,
+  });
 
-    if (product) {
-        product.numReviews = reviews.length;
+  const totalRating = reviews.reduce((sum, item) => sum + item.rating, 0);
 
-        product.averageRating = reviews.length
-            ? totalRating / reviews.length
-            : 0;
+  // Update Product Rating
+  const product = await Product.findById(productId);
 
-        await product.save();
-    }
+  if (product) {
+    product.numReviews = reviews.length;
 
-    res.status(200).json({
-        success: true,
-        message: "Review deleted successfully",
-    });
+    product.averageRating = reviews.length ? totalRating / reviews.length : 0;
+
+    await product.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Review deleted successfully",
+  });
 });

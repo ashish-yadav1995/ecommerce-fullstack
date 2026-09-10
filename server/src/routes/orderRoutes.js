@@ -8,31 +8,41 @@ const {
   getOrderById,
   cancelOrder,
   updateOrderStatus,
+  getSellerOrders,
+  updateSellerOrderStatus,
   getAllOrders,
 } = require("../controllers/orderController");
 
-// router.post("/", placeOrder);
 
-// router.get("/details/:id", getOrderById);
+// Customer → Place Order
+router.post("/", protect, authorize("customer"), placeOrder);
 
-// router.get("/:userId", getMyOrders);
+// Customer → My Orders
+router.get("/my-orders", protect, getMyOrders);
 
-// router.patch("/:id/cancel", cancelOrder);
+// Seller → Own Orders
+router.get("/seller/my-orders", protect, authorize("seller"), getSellerOrders);
 
-// router.patch("/:id/status", updateOrderStatus);
+// Seller → Update Own Order
+router.patch(
+  "/seller/:id/status",
+  protect,
+  authorize("seller"),
+  updateSellerOrderStatus,
+);
 
-// router.get("/admin/all", getAllOrders);
-
-router.post("/", protect, placeOrder);
-
-router.get("/details/:id", protect, getOrderById);
-
-router.get("/", protect, getMyOrders); // no need to pass userId in the request body or params because req.user_Id is available in the request object after authentication middleware.
-
-router.patch("/:id/cancel", protect, cancelOrder);
-
-router.patch("/:id/status", protect, updateOrderStatus);
-
+// Admin → All Orders
 router.get("/admin/all", protect, authorize("admin"), getAllOrders);
+
+// Admin → Update Any Order
+router.patch(
+  "/admin/:id/status",
+  protect,
+  authorize("admin"),
+  updateOrderStatus,
+);
+
+// Single Order  koi bhi access kar sakta hai, bas uska order hona chahiye ya admin hona chahiye
+router.get("/:id", protect, getOrderById);
 
 module.exports = router;
