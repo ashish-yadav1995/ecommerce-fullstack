@@ -1,7 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
 const cors = require("cors");
+const { apiLimiter } = require("./middlewares/rateLimiter");
 const errorHandler = require("./middlewares/errorHandler");
 const categoryRoutes = require("./routes/categoryRoute");
 const authRoutes = require("./routes/authRoutes");
@@ -12,29 +12,39 @@ const addressRoutes = require("./routes/addressRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const userRoutes = require("./routes/userRoutes");
+const sellerRoutes = require("./routes/sellerRoutes")
 const adminRoutes = require("./routes/adminRoutes");
 const app = express();
 
- app.use(helmet())
+app.use(helmet());
 
- app.use(cors())
+//  app.use(cors())
+const allowedOrigins = [process.env.CLIENT_URL];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Postman / server-to-server requests
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+
+    credentials: true,
+  }),
+);
 
 // app.use(express.json());
 
 // src/app.js me check aur change karein:
 app.use(express.json({ limit: "10kb" })); // 👈 10kb se badi payload aate hi block ho jayegi
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
-
-
-const apiLimiter = rateLimit({
-  windowMs:15*60*1000,
-  max:100,
-
-  mesaage:{
-    success:false,
-    mesaage:"Too many requests. Please try again later"
-  }
-})
 
 app.use("/api", apiLimiter);
 
@@ -55,6 +65,8 @@ app.use("/api/v1/order", orderRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 
 app.use("/api/v1/users", userRoutes);
+
+app.use("/api/v1/seller", sellerRoutes)
 
 app.use("/api/v1/admin", adminRoutes);
 

@@ -40,9 +40,23 @@ const userSchema = new mongoose.Schema(
     },
 
     // OTP
+    // otp: {
+    //   code: String,
+    //   expiresAt: Date,
+    // },
+
     otp: {
-      code: String,
-      expiresAt: Date,
+      code: {
+        type: String,
+      },
+
+      expiresAt: {
+        type: Date,
+      },
+
+      lastSentAt: {
+        type: Date,
+      },
     },
 
     isVerified: {
@@ -52,7 +66,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("User", userSchema);

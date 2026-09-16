@@ -33,10 +33,16 @@ const {
   updateUserProfile,
   changePassword,
   deactivateAccount,
+  // getAllUsers,
+  // deactivateUser,
+  // activateUser,
+} = require("../controllers/userController");
+
+const {
   getAllUsers,
   deactivateUser,
   activateUser,
-} = require("../controllers/userController");
+} = require("../controllers/adminController");
 
 router.get("/profile", protect, getUserProfile);
 

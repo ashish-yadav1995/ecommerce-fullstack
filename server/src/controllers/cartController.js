@@ -13,7 +13,7 @@ exports.addToCart = asyncHandler(async (req, res) => {
 
   // Validate IDs
   if (!mongoose.Types.ObjectId.isValid(user)) {
-    throw new ApiError(400, "Invalid User ID");
+    throw new ApiError(400, "Invalid User ID");                         
   }
 
   if (!mongoose.Types.ObjectId.isValid(product)) {
