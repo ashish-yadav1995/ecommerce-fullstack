@@ -1,5 +1,6 @@
 import React from "react";
-import { BrowserRouter, Routes, Route ,Link, Navigate} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
@@ -12,60 +13,91 @@ import Ordersuccess from "./pages/Ordersuccess";
 import Signup from "./pages/Signup";
 import Logout from "./pages/Logout";
 import Profile from "./pages/Profile";
-import { useAuth } from "./context/AuthContext";
 import TrackOrder from "./pages/TrackOrder";
 import OrderDetails from "./pages/OrderDetails";
+import VerifyOtp from "./pages/verifyOtp";
+import ForgotPassword from "./pages/forgotPassword";
+import ResetPassword from "./pages/resetPassword";
 
 function App() {
-
-   const { user, loading } = useAuth()
-   console.log("user",user)
-   
   return (
     <>
       <BrowserRouter>
         <Navbar />
+
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
+
           <Route path="/cart" element={<Cart />} />
 
-          {user ?( 
-            <>
-            <Route path="/login" element={  
-             <ProtectedRoute guestOnly={true}>  
-             <Login />
-            </ProtectedRoute>} />
-            
-            <Route path="/register" element={  
-             <ProtectedRoute guestOnly={true}>  
-             <Signup />
-            </ProtectedRoute>} />
-            </>
-          ):(
-            <>
-              <Route path="/login" element={ <Login/>} />
-              <Route path="/register" element={<Signup/>} />
-            </>
-          )}
-          <Route path="/logout" element={
-             <ProtectedRoute>  
-             <Logout />
-            </ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-              <ProtectedRoute>  
-             <Profile />
-            </ProtectedRoute>
-          } />
           <Route path="/productdetail" element={<ProductDetail />} />
-          <Route path="/order-success" element={<Ordersuccess/>}/>
-          <Route path = "/trackorder" element={<TrackOrder/>}/>
-           <Route path = "/order-details/:id" element={<OrderDetails/>}/>
-          <Route path="/checkout" element={
-            <ProtectedRoute>  
-              <Checkout/>
-            </ProtectedRoute>
-            } />
+
+          <Route path="/order-success" element={<Ordersuccess />} />
+
+          <Route path="/trackorder" element={<TrackOrder />} />
+
+          <Route path="/order-details/:id" element={<OrderDetails />} />
+
+           <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Guest Only Routes */}
+
+          <Route
+            path="/login"
+            element={
+              <ProtectedRoute guestOnly={true}>
+                <Login />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/register"
+            element={
+              <ProtectedRoute guestOnly={true}>
+                <Signup />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* OTP Verification */}
+
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+
+          {/* Protected Routes */}
+
+          <Route
+            path="/logout"
+            element={
+              <ProtectedRoute>
+                <Logout />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Route */}
+
           <Route
             path="/admin"
             element={
@@ -82,10 +114,99 @@ function App() {
 
 export default App;
 
+// ========================================================================
+
+// import React from "react";
+// import { BrowserRouter, Routes, Route ,Link, Navigate} from "react-router-dom";
+// import Home from "./pages/Home";
+// import Cart from "./pages/Cart";
+// import Login from "./pages/Login";
+// import AdminHome from "./pages/Dashboard/AdminHome";
+// import Navbar from "./components/Navbar";
+// import ProtectedRoute from "./components/ProtectedRoute";
+// import ProductDetail from "./pages/ProductDetail";
+// import Checkout from "./pages/Checkout";
+// import Ordersuccess from "./pages/Ordersuccess";
+// import Signup from "./pages/Signup";
+// import Logout from "./pages/Logout";
+// import Profile from "./pages/Profile";
+// import { useAuth } from "./context/AuthContext";
+// import TrackOrder from "./pages/TrackOrder";
+// import OrderDetails from "./pages/OrderDetails";
+// import VerifyOtp from "./pages/verifyOtp";
+
+// function App() {
+
+//    const { user, loading } = useAuth()
+//    console.log("user",user)
+
+//   return (
+//     <>
+//       <BrowserRouter>
+//         <Navbar />
+//         <Routes>
+//           <Route path="/" element={<Home />} />
+//           <Route path="/cart" element={<Cart />} />
+
+//           {user ?(
+//             <>
+//             <Route path="/login" element={
+//              <ProtectedRoute guestOnly={true}>
+//              <Login />
+//             </ProtectedRoute>} />
+
+//             <Route path="/register" element={
+//              <ProtectedRoute guestOnly={true}>
+//              <Signup />
+//             </ProtectedRoute>} />
+
+//             <Route path="/verify-otp" element={
+//              <ProtectedRoute guestOnly={true}>
+//              <VerifyOtp />
+//             </ProtectedRoute>} />
+//             </>
+//           ):(
+//             <>
+//               <Route path="/login" element={ <Login/>} />
+//               <Route path="/register" element={<Signup/>} />
+//             </>
+//           )}
+//           <Route path="/logout" element={
+//              <ProtectedRoute>
+//              <Logout />
+//             </ProtectedRoute>
+//           } />
+//           <Route path="/profile" element={
+//               <ProtectedRoute>
+//              <Profile />
+//             </ProtectedRoute>
+//           } />
+//           <Route path="/productdetail" element={<ProductDetail />} />
+//           <Route path="/order-success" element={<Ordersuccess/>}/>
+//           <Route path = "/trackorder" element={<TrackOrder/>}/>
+//            <Route path = "/order-details/:id" element={<OrderDetails/>}/>
+//           <Route path="/checkout" element={
+//             <ProtectedRoute>
+//               <Checkout/>
+//             </ProtectedRoute>
+//             } />
+//           <Route
+//             path="/admin"
+//             element={
+//               <ProtectedRoute role="admin">
+//                 <AdminHome />
+//               </ProtectedRoute>
+//             }
+//           />
+//         </Routes>
+//       </BrowserRouter>
+//     </>
+//   );
+// }
+
+// export default App;
 
 // --------------------------------------------------------------
-
-
 
 // import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 // import { AuthProvider, useAuth } from '../src/pagesforpractice/Routing/AuthContext'
@@ -150,13 +271,9 @@ export default App;
 //   );
 // }
 
-// export default App;  
-
+// export default App;
 
 // ------------------------------------------------------------------------------
-
-
-
 
 // import React from 'react'
 // import{BrowserRouter,Routes,Route,Link,Navigate} from "react-router-dom"
@@ -189,7 +306,6 @@ export default App;
 //          <Route path='/' element={<Login/>}/>
 //           </>
 //          )}
-        
 
 //         {/* ProtectedRoute */}
 
@@ -215,11 +331,10 @@ export default App;
 //        </>
 //        }
 
-   
 //         </Route>
 
-//          {/* public route */} 
-//         <Route path='/about' element={<About/>}/> 
+//          {/* public route */}
+//         <Route path='/about' element={<About/>}/>
 
 //         {/* for not match route */}
 //         <Route path="/*" element={<h1>Page not found</h1>}/>

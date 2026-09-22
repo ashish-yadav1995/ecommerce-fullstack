@@ -1,6 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const cookieParser = require("cookie-parser")
 const { apiLimiter } = require("./middlewares/rateLimiter");
 const errorHandler = require("./middlewares/errorHandler");
 const categoryRoutes = require("./routes/categoryRoute");
@@ -45,6 +46,7 @@ app.use(
 // src/app.js me check aur change karein:
 app.use(express.json({ limit: "10kb" })); // 👈 10kb se badi payload aate hi block ho jayegi
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+app.use(cookieParser());
 
 app.use("/api", apiLimiter);
 
@@ -71,7 +73,7 @@ app.use("/api/v1/seller", sellerRoutes)
 app.use("/api/v1/admin", adminRoutes);
 
 app.get("/", (req, res) => {
-  res.json({ message: "API Running" });
+  res.json({ message: "API Running" }); 
 });
 
 app.use(errorHandler);

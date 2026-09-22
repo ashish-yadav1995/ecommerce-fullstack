@@ -12,15 +12,21 @@ const ApiError = require("../utils/ApiError");
 
 const protect = asyncHandler(async (req, res, next) => {
 
-    let token;
+    // let token;
 
     // 1. Check Authorization Header
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith("Bearer ")
-    ) {
-        token = req.headers.authorization.split(" ")[1];
-    }
+    // if (
+    //     req.headers.authorization &&
+    //     req.headers.authorization.startsWith("Bearer ")
+    // ) {
+    //     token = req.headers.authorization.split(" ")[1];
+    // }
+
+    //    upar wala code header based jwt authentication ke liye hai
+
+    // JWT cookie se milega
+    const token = req.cookies?.token;
+
 
     // 2. Token nahi mila
     if (!token) {
@@ -55,10 +61,9 @@ const protect = asyncHandler(async (req, res, next) => {
     }
 
     // 6. User ko request ke andar attach karo
-    req.user = user;
+    req.user = user;    
 
     // 7. Next middleware/controller
-    console.log("User authenticated:", user.email);
     next();
 });
 

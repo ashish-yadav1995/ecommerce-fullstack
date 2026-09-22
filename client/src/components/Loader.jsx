@@ -1,13 +1,3 @@
-// import React from 'react'
-
-// function Loader(){
-//      return(
-//         <h2>Loading products...</h2>
-//      )
-// }
-
-// export default Loader;
-
 function Loader() {
   return (
     <div className="flex justify-center items-center h-[60vh]">

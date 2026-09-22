@@ -15,7 +15,7 @@ const apiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 50,        // for testing baad me 10 karna hai ya 5
 
   standardHeaders: true,
   legacyHeaders: false,

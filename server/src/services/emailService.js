@@ -42,11 +42,10 @@ const sendOTP = async (email, otp) => {
         from: process.env.EMAIL_FROM,
         to: email,
         subject: "Your OTP Verification Code",
-
         text: `Your OTP is ${otp}. It will expire in 10 minutes.`,
     });
 };
 
 module.exports = {
     sendOTP,
-};
+};  
