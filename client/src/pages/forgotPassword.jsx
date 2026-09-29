@@ -22,7 +22,7 @@ const ForgotPassword = () => {
         setError("Please enter a valid email address");
         return; // Aage ka code execute hone se rokne ke liye
       }
-
+console.log("first")
       const responseData = await forgotPassword(email);
 
       console.log("userEmail",responseData)
@@ -32,7 +32,7 @@ const ForgotPassword = () => {
       }
 
     } catch (error) {
-        const message = error.response.data.message;
+        const message = error.response?.data?.message;
         alert(message)
     }
   };

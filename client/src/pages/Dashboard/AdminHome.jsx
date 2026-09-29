@@ -54,8 +54,10 @@ import myimg from  "../../assets/images/tshirt.webp"
 function AdminHome() {
   const [products, setProducts] = useState([]);
 
+  console.log("=================================")
+
   useEffect(() => {
-    loadProducts();
+    // loadProducts();
   }, []);
 
   const loadProducts = async () => {

@@ -6,6 +6,10 @@ const Category = require("../models/Category");
 const asyncHandler = require("../middlewares/asyncHandler");
 const ApiError = require("../utils/ApiError");
 
+const User = require("../models/User");
+
+const { uploadToCloudinary } = require("../services/cloudinaryService");
+
 exports.createProduct = asyncHandler(async (req, res) => {
   const {
     name,
@@ -13,13 +17,30 @@ exports.createProduct = asyncHandler(async (req, res) => {
     brand,
     sku,
     price,
-    discountPrice = req.body.discountPrice || 0,
-    stock,
+    discountPrice =  0,
+    stock,  
     category,
-    images = [],
-    isFeatured = req.body.isFeatured || false,
-    isactive = req.body.isactive || true,
+    // images = [], // images ko cloudinary kiya hu
+    isFeatured =  false,
+    isactive = true,
   } = req.body;
+
+  const images = [];
+  const sellerId =  req.user._id
+
+  if (!mongoose.Types.ObjectId.isValid(sellerId)) {
+      throw new ApiError(400, "Invalid Seller ID");
+    }
+
+    const sellerExists = await User.findById(sellerId);
+
+    if(!sellerExists){
+      throw new ApiError(404, "Seller account not found.");
+    }
+
+    if (sellerExists.role !== "seller" && sellerExists.role !== "admin") {
+    throw new ApiError(403, "Access denied. Only sellers can create products.");
+  }
 
   // Required Field Validation
   if (!name) {
@@ -96,6 +117,16 @@ exports.createProduct = asyncHandler(async (req, res) => {
   // Generate Slug
   const slug = name.trim().toLowerCase().replace(/\s+/g, "-");
 
+  // upload images to cloudinary
+
+
+  if (req.files && req.files.length > 0) {
+    for (const file of req.files) {
+      const imageUrl = await uploadToCloudinary(file.buffer);
+      images.push(imageUrl);
+    }
+  }
+
   // Create Product
   const product = await Product.create({
     name,
@@ -109,6 +140,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
     images,
     slug,
     isFeatured,
+    seller: req.user._id,
   });
 
   res.status(201).json({
@@ -390,7 +422,7 @@ exports.deleteProduct = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(403, "You are not allowed to delete this product");
   }
-                                                        
+
   if (!product) {
     throw new ApiError(404, "Product not found");
   }
