@@ -266,6 +266,7 @@ exports.resendOTP = asyncHandler(async (req, res) => {
 exports.login = asyncHandler(async (req, res) => {
   const email = req.body.email?.trim().toLowerCase();
   const { password } = req.body;
+  console.log("Login request received for email:", email,password);
   // 1. Validate fields
   if (!email || !password) {
     throw new ApiError(400, "Email and password are required");

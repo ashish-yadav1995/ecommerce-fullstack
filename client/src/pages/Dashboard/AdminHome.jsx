@@ -1,54 +1,6 @@
-// import { useEffect, useState } from "react";
-// import { getProducts } from "../../services/api";
-// import AddProduct from "./AddProduct";
-
-// function AdminHome() {
-//   const [products, setProducts] = useState([]);
-
-//   useEffect(() => {
-//     loadProducts();
-//   }, []);
-
-//   const loadProducts = async () => {
-//     const data = await getProducts();
-//     setProducts(data.products);
-//   };
-
-//   // 🗑 delete
-//   const deleteProduct = (id) => {
-//     setProducts((prev) => prev.filter((p) => p.id !== id));
-//   };
-
-//   // ➕ add
-//   const addProduct = (newProduct) => {
-//     setProducts((prev) => [...prev, { ...newProduct, id: Date.now() }]);
-//   };
-
-//   return (
-//     <div>
-//       <h1>Admin Dashboard</h1>
-
-//       <AddProduct onAdd={addProduct} />
-
-//       {products.map((p) => (
-//         <div key={p.id} style={{ border: "1px solid gray", margin: "10px" }}>
-//           <h4>{p.title}</h4>
-//           <p>₹ {p.price}</p>
-
-//           <button onClick={() => deleteProduct(p.id)}>
-//             Delete
-//           </button>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
-// export default AdminHome;
-
 import { useEffect, useState } from "react";
-import { getProducts } from "../../services/api";
-import AddProduct from "./AddProduct";
+import { getAllProducts } from "../../services/productApi";
+import AddProductDashboard from "./AddProductDashboard";
 import myimg from  "../../assets/images/tshirt.webp"
 
 function AdminHome() {
@@ -61,7 +13,7 @@ function AdminHome() {
   }, []);
 
   const loadProducts = async () => {
-    const data = await getProducts();
+    const data = await getAllProducts();
     setProducts(data.products); // ✅ fix
   };
 
@@ -85,7 +37,7 @@ function AdminHome() {
       </h1>
 
       {/* Add Product */}
-      <AddProduct onAdd={addProduct} />
+      <AddProductDashboard onAdd={addProduct} />
 
       {/* Product List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

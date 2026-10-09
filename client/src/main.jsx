@@ -14,13 +14,20 @@ import "./index.css";
 import CartProvider from "./context/CartContext";
 import AuthProvider from "./context/AuthContext";
 import WishListProvider from "./context/WishlistContext";
+import OrderProvider from "./context/OrderContext";
+import { BrowserRouter } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-    <CartProvider>
-      <WishListProvider>
-        <App />
-      </WishListProvider>
-    </CartProvider>
-  </AuthProvider>,
+  <BrowserRouter>
+    <AuthProvider>
+      <CartProvider>
+        <WishListProvider>
+         <OrderProvider>
+          <App />
+        </OrderProvider>
+        </WishListProvider>
+      </CartProvider>
+    </AuthProvider>
+  </BrowserRouter>
 );
+  

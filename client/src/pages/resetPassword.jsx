@@ -23,7 +23,6 @@ const ResetPassword = () => {
       [name]: value,
     });
   };
-  console.log(error);
 
   const validation = () => {
     const { otp, newPassword, confirmNewPassword } = formData;

@@ -11,34 +11,39 @@ const User = require("../models/User");
 const { uploadToCloudinary } = require("../services/cloudinaryService");
 
 exports.createProduct = asyncHandler(async (req, res) => {
+console.log("req",req.body)
   const {
     name,
     description,
     brand,
     sku,
     price,
-    discountPrice =  0,
-    stock,  
+    discountPrice,
+    stock,
     category,
     // images = [], // images ko cloudinary kiya hu
-    isFeatured =  false,
+    isFeatured = false,
     isactive = true,
   } = req.body;
 
+  const parsedPrice = Number(price);
+  const parsedDiscountPrice = Number(discountPrice);
+  const parsedStock = Number(stock || 0);
+
   const images = [];
-  const sellerId =  req.user._id
+  const sellerId = req.user._id;
 
   if (!mongoose.Types.ObjectId.isValid(sellerId)) {
-      throw new ApiError(400, "Invalid Seller ID");
-    }
+    throw new ApiError(400, "Invalid Seller ID");
+  }
 
-    const sellerExists = await User.findById(sellerId);
+  const sellerExists = await User.findById(sellerId);
 
-    if(!sellerExists){
-      throw new ApiError(404, "Seller account not found.");
-    }
+  if (!sellerExists) {
+    throw new ApiError(404, "Seller account not found.");
+  }
 
-    if (sellerExists.role !== "seller" && sellerExists.role !== "admin") {
+  if (sellerExists.role !== "seller" && sellerExists.role !== "admin") {
     throw new ApiError(403, "Access denied. Only sellers can create products.");
   }
 
@@ -59,11 +64,11 @@ exports.createProduct = asyncHandler(async (req, res) => {
     throw new ApiError(400, "SKU is required");
   }
 
-  if (price === undefined) {
+  if (parsedPrice === undefined) {
     throw new ApiError(400, "Price is required");
   }
 
-  if (stock === undefined) {
+  if (parsedStock === undefined) {
     throw new ApiError(400, "Stock is required");
   }
 
@@ -91,22 +96,22 @@ exports.createProduct = asyncHandler(async (req, res) => {
   }
 
   // Business Validations
-  if (price < 0) {
+  if (parsedPrice < 0) {
     throw new ApiError(400, "Price cannot be negative");
   }
 
-  if (discountPrice < 0) {
+  if (parsedDiscountPrice < 0) {
     throw new ApiError(400, "Discount price cannot be negative");
   }
 
-  if (discountPrice > price) {
+  if (parsedDiscountPrice > parsedPrice) {
     throw new ApiError(
       400,
       "Discount price cannot be greater than actual price",
     );
   }
 
-  if (stock < 0) {
+  if (parsedStock < 0) {
     throw new ApiError(400, "Stock cannot be negative");
   }
 
@@ -118,7 +123,6 @@ exports.createProduct = asyncHandler(async (req, res) => {
   const slug = name.trim().toLowerCase().replace(/\s+/g, "-");
 
   // upload images to cloudinary
-
 
   if (req.files && req.files.length > 0) {
     for (const file of req.files) {
@@ -133,9 +137,9 @@ exports.createProduct = asyncHandler(async (req, res) => {
     description,
     brand,
     sku,
-    price,
-    discountPrice,
-    stock,
+    price: parsedPrice, // Naya parsed number bhejein
+    discountPrice: parsedDiscountPrice, // Naya parsed number bhejein
+    stock: parsedStock, // Naya parsed number bhejein
     category,
     images,
     slug,
@@ -261,7 +265,7 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
 
     count: products.length,
 
-    data: products,
+    products,
   });
 });
 
@@ -282,12 +286,14 @@ exports.getProductById = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: product,
+    product,
   });
 });
 
 exports.updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
+ 
 
   const {
     name,
@@ -302,6 +308,11 @@ exports.updateProduct = asyncHandler(async (req, res) => {
     isFeatured,
     isActive,
   } = req.body;
+
+
+console.log("req", req.body)
+
+console.log("stock",stock)
 
   // Validate Product ID
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -401,7 +412,7 @@ exports.updateProduct = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Product updated successfully",
-    data: product,
+     product
   });
 });
 
@@ -440,5 +451,19 @@ exports.deleteProduct = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Product deleted successfully",
+  });
+});
+
+exports.getMyProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({
+    seller: req.user._id,
+  })
+    .populate("category", "name")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: products.length,
+    products,
   });
 });

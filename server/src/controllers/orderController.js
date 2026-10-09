@@ -28,7 +28,8 @@ exports.placeOrder = asyncHandler(async (req, res) => {
   }
 
   // User Cart
-  const cartItems = await Cart.find({ user }).populate("product");
+  const cartItems = await Cart.find({ user: req.user._id }).populate("product");
+  console.log("cartItems:", cartItems);
 
   if (cartItems.length === 0) {
     throw new ApiError(400, "Cart is empty");

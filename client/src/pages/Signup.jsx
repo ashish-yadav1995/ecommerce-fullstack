@@ -75,9 +75,7 @@ const Signup = () => {
 
     try {
       setLoading(true);
-
       let response;
-
       const name = formData.fullName.trim();
       const email = formData.email.trim().toLowerCase();
       const password = formData.password;
@@ -90,19 +88,18 @@ const Signup = () => {
 
       // OTP page par email bhejenge
       // navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
-       navigate("/verify-otp", {state:{email:email}})
-
+      navigate("/verify-otp", { state: { email: email } });
     } catch (error) {
-      const errorData = error.response?.data
+      const errorData = error.response?.data;
       const status = error.response?.status;
-      const message = errorData?.message || "Registration failed. Please try again.";
+      const message =
+        errorData?.message || "Registration failed. Please try again.";
 
-
-        if(status === 403 && errorData?.code === "EMAIL_NOT_VERIFIED"){
-          //  setError({ submit: message });
-          alert(message)
-           navigate("/verify-otp", {state:{email:errorData?.email}})
-        }
+      if (status === 403 && errorData?.code === "EMAIL_NOT_VERIFIED") {
+        //  setError({ submit: message });
+        alert(message);
+        navigate("/verify-otp", { state: { email: errorData?.email } });
+      }
 
       setError({
         submit: message,
@@ -185,7 +182,7 @@ const Signup = () => {
             <input
               name="email"
               type="email"
-              autoComplete="new-username" 
+              autoComplete="new-username"
               value={formData.email}
               onChange={handleChange}
               placeholder="name@example.com"

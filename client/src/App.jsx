@@ -1,113 +1,167 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+// Public Pages
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
-import AdminHome from "./pages/Dashboard/AdminHome";
-import Navbar from "./components/Navbar";
-import ProtectedRoute from "./components/ProtectedRoute";
 import ProductDetail from "./pages/ProductDetail";
-import Checkout from "./pages/Checkout";
-import Ordersuccess from "./pages/Ordersuccess";
 import Signup from "./pages/Signup";
-import Logout from "./pages/Logout";
-import Profile from "./pages/Profile";
-import TrackOrder from "./pages/TrackOrder";
-import OrderDetails from "./pages/OrderDetails";
 import VerifyOtp from "./pages/verifyOtp";
 import ForgotPassword from "./pages/forgotPassword";
 import ResetPassword from "./pages/resetPassword";
 
+// User Protected Pages
+import Checkout from "./pages/Checkout";
+import Ordersuccess from "./pages/Ordersuccess";
+import TrackOrder from "./pages/TrackOrder";
+import OrderDetails from "./pages/OrderDetails";
+import Profile from "./pages/Profile";
+import Logout from "./pages/Logout";
+
+// Admin & Seller Pages (Import Missing Elements Added Here)
+import AdminHome from "./pages/Dashboard/AdminHome";
+import SellerHome from "./pages/Dashboard/SellerHome"; // Adjust file path as per your folder structure
+import AddProductDashboard from "./pages/Dashboard/AddProductDashboard"; // Adjust file path as per your folder structure
+import MyProductsDashboard from "./pages/Dashboard/MyProductsDashboard"; // Adjust file path as per your folder structure
+
+// Components
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import EditProduct from "./pages/Dashboard/EditProduct";
+
 function App() {
   return (
+    // <BrowserRouter>
     <>
-      <BrowserRouter>
-        <Navbar />
+      <Navbar />
 
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
+      <Routes>
+        {/* ================= PUBLIC ROUTES ================= */}
+        <Route path="/" element={<Home />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/productdetail" element={<ProductDetail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
 
-          <Route path="/cart" element={<Cart />} />
+        {/* ================= GUEST ONLY ROUTES ================= */}
+        <Route
+          path="/login"
+          element={
+            <ProtectedRoute guestOnly={true}>
+              <Login />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <ProtectedRoute guestOnly={true}>
+              <Signup />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route path="/productdetail" element={<ProductDetail />} />
+        {/* ================= USER PROTECTED ROUTES ================= */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order-success"
+          element={
+            <ProtectedRoute>
+              <Ordersuccess />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trackorder"
+          element={
+            <ProtectedRoute>
+              <TrackOrder />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order-details/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/logout"
+          element={
+            <ProtectedRoute>
+              <Logout />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route path="/order-success" element={<Ordersuccess />} />
+        {/* ================= ADMIN ROUTE ================= */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminHome />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route path="/trackorder" element={<TrackOrder />} />
+        {/* ================= SELLER ROUTES ================= */}
+        <Route
+          path="/seller"
+          element={
+            <ProtectedRoute role="seller">
+              <SellerHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/add-product"
+          element={
+            <ProtectedRoute role="seller">
+              <AddProductDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/products"
+          element={
+            <ProtectedRoute role="seller">
+              <MyProductsDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route path="/order-details/:id" element={<OrderDetails />} />
+        <Route
+          path="/seller/edit-product/:id"
+          element={
+            <ProtectedRoute role="seller">
+              <EditProduct />
+            </ProtectedRoute>
+          }
+        />
+      {/* ================= 404 CATCH ALL ================= */}
+        <Route path="*" element={<div>Page Not Found (404)</div>} />
+      </Routes>
 
-           <Route path="/forgot-password" element={<ForgotPassword />} />
-
-            <Route path="/reset-password" element={<ResetPassword />} />
-
-          {/* Guest Only Routes */}
-
-          <Route
-            path="/login"
-            element={
-              <ProtectedRoute guestOnly={true}>
-                <Login />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/register"
-            element={
-              <ProtectedRoute guestOnly={true}>
-                <Signup />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* OTP Verification */}
-
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-
-          {/* Protected Routes */}
-
-          <Route
-            path="/logout"
-            element={
-              <ProtectedRoute>
-                <Logout />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/checkout"
-            element={
-              <ProtectedRoute>
-                <Checkout />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Admin Route */}
-
-          <Route
-            path="/admin"
-            element={
-              // <ProtectedRoute role="admin">
-                <AdminHome />
-              // </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+    {/* // </BrowserRouter> */}
     </>
   );
 }

@@ -38,21 +38,20 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function ProtectedRoute({ children, role, guestOnly }) {
-  const { user, loading } = useAuth();
+  const { user , loading ,isAuthenticated} = useAuth();
   const location = useLocation();
-
-  // AuthContext /auth/me check kar raha hai
+console.log("protectedroute",user)
   if (loading) {
     return <div>Loading...</div>;
   }
 
   // Login/Register jaise guest-only pages
-  if (guestOnly && user) {
+  if (guestOnly && isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
   // Protected page + user login nahi hai
-  if (!guestOnly && !user) {
+  if (!guestOnly && !isAuthenticated) {
     return (
       <Navigate
         to="/login"

@@ -1,81 +1,64 @@
-// import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-// function AddProduct({ onAdd }) {
-//   const [title, setTitle] = useState("");
-//   const [price, setPrice] = useState("");
+import {
+  getProductById,
+  updateProduct,
+} from "../../services/productApi";
 
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-
-//     if (!title || !price) return;
-
-//     const newProduct = {
-//       title,
-//       price: Number(price),
-//       image: "https://via.placeholder.com/150",
-//     };
-
-//     onAdd(newProduct);
-
-//     setTitle("");
-//     setPrice("");
-//   };
-
-//   return (
-//     <form
-//       onSubmit={handleSubmit}
-//       className="bg-white p-4 rounded-lg shadow mb-6 flex flex-col md:flex-row gap-4"
-//     >
-//       <input
-//         type="text"
-//         placeholder="Product name"
-//         className="border p-2 rounded w-full"
-//         value={title}
-//         onChange={(e) => setTitle(e.target.value)}
-//       />
-
-//       <input
-//         type="number"
-//         placeholder="Price"
-//         className="border p-2 rounded w-full"
-//         value={price}
-//         onChange={(e) => setPrice(e.target.value)}
-//       />
-
-//       <button
-//         type="submit"
-//         className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-//       >
-//         Add
-//       </button>
-//     </form>
-//   );
-// }
-
-// export default AddProduct;
-
-// =================================================
-
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createProduct } from "../../services/productApi";
-
-function AddProduct() {
+function EditProduct() {
+  const { id } = useParams();
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
     description: "",
     brand: "",
-    sku: "",
     price: "",
     discountPrice: "",
     stock: "",
     category: "",
-    images: [],
   });
 
-  const [loading, setLoading] = useState(false);
+  // Get existing product
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await getProductById(id,form);
+
+        const product = response.product;
+
+        setForm({
+          name: product.name || "",
+          description: product.description || "",
+          brand: product.brand || "",
+          price: product.price || "",
+          discountPrice: product.discountPrice || "",
+          stock: product.stock || "",
+          category:
+            product.category?._id ||
+            product.category ||
+            "",
+        });
+      } catch (error) {
+        console.error("Get Product Error:", error);
+
+        alert(
+          error.response?.data?.message ||
+            "Failed to load product"
+        );
+
+        navigate("/seller/products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -86,58 +69,63 @@ function AddProduct() {
     }));
   };
 
-  const handleImages = (e) => {
-    setForm((prev) => ({
-      ...prev,
-      images: Array.from(e.target.files),
-    }));
-  };
-
+  // Update product
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      setLoading(true);
+      setUpdating(true);
 
-      const formData = new FormData();
-
-      formData.append("name", form.name);
-      formData.append("description", form.description);
-      formData.append("brand", form.brand);
-      formData.append("sku", form.sku);
-      formData.append("price", form.price);
-      formData.append("discountPrice", form.discountPrice || 0);
-      formData.append("stock", form.stock);
-      formData.append("category", form.category);
-
-      form.images.forEach((image) => {
-        formData.append("images", image);
+      const response = await updateProduct(id, {
+        name: form.name,
+        description: form.description,
+        brand: form.brand,
+        price: Number(form.price),
+        discountPrice: Number(form.discountPrice) || 0,
+        stock: Number(form.stock),
+        category: form.category,
       });
 
-      const response = await createProduct(formData);
+      console.log("Updated Product:", response);
 
-      console.log("Product Created:", response);
+      alert("Product updated successfully");
 
-      alert("Product created successfully!");
-
-      navigate("/seller");
+      navigate("/seller/products");
     } catch (error) {
-      console.error("Create Product Error:", error);
+      console.error("Update Product Error:", error);
 
-      alert(error.response?.data?.message || "Failed to create product");
+      alert(
+        error.response?.data?.message ||
+          "Failed to update product"
+      );
     } finally {
-      setLoading(false);
+      setUpdating(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="font-semibold">
+          Loading product...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
+
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-gray-900">Add Product</h1>
+          <h1 className="text-3xl font-black text-gray-900">
+            Edit Product
+          </h1>
 
-          <p className="text-gray-500 mt-1">Add a new product to your store</p>
+          <p className="text-gray-500 mt-1">
+            Update your product information
+          </p>
         </div>
 
         {/* Form */}
@@ -145,11 +133,15 @@ function AddProduct() {
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
         >
+
           {/* Product Information */}
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-5">Product Information</h2>
+            <h2 className="text-xl font-bold mb-5">
+              Product Information
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
               {/* Name */}
               <div>
                 <label className="block text-sm font-semibold mb-2">
@@ -161,7 +153,6 @@ function AddProduct() {
                   name="name"
                   value={form.name}
                   onChange={handleChange}
-                  placeholder="Enter product name"
                   required
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                 />
@@ -178,22 +169,6 @@ function AddProduct() {
                   name="brand"
                   value={form.brand}
                   onChange={handleChange}
-                  placeholder="Enter brand"
-                  required
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              {/* SKU */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">SKU</label>
-
-                <input
-                  type="text"
-                  name="sku"
-                  value={form.sku}
-                  onChange={handleChange}
-                  placeholder="Example: IP15-128-BLK"
                   required
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                 />
@@ -210,11 +185,11 @@ function AddProduct() {
                   name="category"
                   value={form.category}
                   onChange={handleChange}
-                  placeholder="Enter category ID"
                   required
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
+
             </div>
 
             {/* Description */}
@@ -227,7 +202,6 @@ function AddProduct() {
                 name="description"
                 value={form.description}
                 onChange={handleChange}
-                placeholder="Enter product description"
                 rows="5"
                 required
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black resize-none"
@@ -237,9 +211,12 @@ function AddProduct() {
 
           {/* Pricing & Stock */}
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-5">Pricing & Stock</h2>
+            <h2 className="text-xl font-bold mb-5">
+              Pricing & Stock
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
               {/* Price */}
               <div>
                 <label className="block text-sm font-semibold mb-2">
@@ -251,14 +228,13 @@ function AddProduct() {
                   name="price"
                   value={form.price}
                   onChange={handleChange}
-                  placeholder="₹ 0"
                   min="0"
                   required
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
 
-              {/* Discount */}
+              {/* Discount Price */}
               <div>
                 <label className="block text-sm font-semibold mb-2">
                   Discount Price
@@ -269,7 +245,6 @@ function AddProduct() {
                   name="discountPrice"
                   value={form.discountPrice}
                   onChange={handleChange}
-                  placeholder="₹ 0"
                   min="0"
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                 />
@@ -286,52 +261,33 @@ function AddProduct() {
                   name="stock"
                   value={form.stock}
                   onChange={handleChange}
-                  placeholder="0"
                   min="0"
                   required
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
+
             </div>
           </div>
 
-          {/* Images */}
+          {/* Existing Images */}
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-5">Product Images</h2>
+            <h2 className="text-xl font-bold mb-4">
+              Product Images
+            </h2>
 
-            <label className="block border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-black transition">
-              <div className="text-4xl mb-3">📷</div>
-
-              <p className="font-semibold text-gray-700">
-                Select Product Images
-              </p>
-
-              <p className="text-sm text-gray-400 mt-1">
-                You can select multiple images
-              </p>
-
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImages}
-                className="hidden"
-              />
-            </label>
-
-            {/* Selected Images */}
-            {form.images.length > 0 && (
-              <p className="text-sm text-gray-600 mt-3">
-                {form.images.length} image(s) selected
-              </p>
-            )}
+            <p className="text-sm text-gray-500">
+              Existing product images are kept unchanged.
+              Image replacement will be added separately.
+            </p>
           </div>
 
           {/* Buttons */}
           <div className="flex justify-end gap-3">
+
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/seller/products")}
               className="px-6 py-3 rounded-xl border border-gray-300 font-semibold hover:bg-gray-100"
             >
               Cancel
@@ -339,16 +295,19 @@ function AddProduct() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={updating}
               className="px-6 py-3 rounded-xl bg-black text-white font-semibold hover:bg-gray-800 disabled:opacity-50"
             >
-              {loading ? "Creating..." : "Create Product"}
+              {updating ? "Updating..." : "Update Product"}
             </button>
+
           </div>
+
         </form>
       </div>
     </div>
   );
 }
 
-export default AddProduct;
+export default EditProduct;
+

@@ -7,7 +7,6 @@ const ApiError = require("../utils/ApiError");
 
 exports.addAddress = asyncHandler(async (req, res) => {
   const {
-    user,
     fullName,
     mobile,
     addressLine1,
@@ -21,7 +20,9 @@ exports.addAddress = asyncHandler(async (req, res) => {
     isDefault,
   } = req.body;
 
+  const  user = req.user._id.toString(); // Authenticated user ID
 
+console.log("User ID from request:", user);
   // Validate User ID
   if (!mongoose.Types.ObjectId.isValid(user)) {
     throw new ApiError(400, "Invalid User ID");

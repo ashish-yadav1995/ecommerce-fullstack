@@ -15,7 +15,7 @@ const {
 
 
 // Customer → Place Order
-router.post("/", protect, authorize("customer"), placeOrder);
+router.post("/", protect, authorize("customer","seller"), placeOrder);
 
 // Customer → My Orders
 router.get("/my-orders", protect, getMyOrders);

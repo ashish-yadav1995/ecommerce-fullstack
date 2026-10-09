@@ -2,10 +2,20 @@
 // import { useAuth } from "../context/AuthContext";
 
 // const Logout = () => {
-//   // Logic aap khud handle karoge (setUser(null) etc.)
-//   // Bas UI elements ka maza lo!
-//   const { Logout } = useAuth();
+//   // const { handleLogout } = useAuth();
 //   const navigate = useNavigate();
+
+//   const handleLogout = async () => {
+//     try {
+//       await Logout();
+
+//       navigate("/login", {
+//         replace: true,
+//       });
+//     } catch (error) {
+//       console.error("Logout failed:", error);
+//     }
+//   };
 
 //   return (
 //     <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-6">
@@ -32,8 +42,10 @@
 //         <h1 className="text-2xl font-black text-black tracking-tight mb-2">
 //           Oh no! You're leaving...
 //         </h1>
+
 //         <p className="text-gray-500 text-sm font-medium mb-8 leading-relaxed">
-//           Are you sure you want to log out from MyStore? <br />
+//           Are you sure you want to log out from MyStore?
+//           <br />
 //           You'll need to login again to access your orders.
 //         </p>
 
@@ -41,13 +53,14 @@
 //         <div className="flex flex-col gap-3">
 //           <button
 //             className="w-full py-4 bg-black text-white rounded-2xl font-bold text-sm hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
-//             onClick={Logout}
+//             onClick={handleLogout}
 //           >
 //             Yes, Log Me Out
 //           </button>
 
-//           <button className="w-full py-4 bg-transparent text-gray-400 rounded-2xl font-bold text-sm hover:text-black transition-all"
-//           onClick={() => navigate(-1)}
+//           <button
+//             className="w-full py-4 bg-transparent text-gray-400 rounded-2xl font-bold text-sm hover:text-black transition-all"
+//             onClick={() => navigate(-1)}
 //           >
 //             No, Take Me Back
 //           </button>
@@ -63,19 +76,23 @@
 // };
 
 // export default Logout;
-
-// ================================================
+// ====================================
 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Logout = () => {
-  const { Logout } = useAuth();
+  const { logout, loading } = useAuth();
+
   const navigate = useNavigate();
+
+  // =========================
+  // LOGOUT
+  // =========================
 
   const handleLogout = async () => {
     try {
-      await Logout();
+      await logout();
 
       navigate("/login", {
         replace: true,
@@ -88,7 +105,11 @@ const Logout = () => {
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-6">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-gray-100 p-10 text-center">
-        {/* Visual Icon */}
+
+        {/* =========================
+            ICON
+        ========================= */}
+
         <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +127,10 @@ const Logout = () => {
           </svg>
         </div>
 
-        {/* Text Content */}
+        {/* =========================
+            TEXT
+        ========================= */}
+
         <h1 className="text-2xl font-black text-black tracking-tight mb-2">
           Oh no! You're leaving...
         </h1>
@@ -117,27 +141,42 @@ const Logout = () => {
           You'll need to login again to access your orders.
         </p>
 
-        {/* Action Buttons */}
+        {/* =========================
+            BUTTONS
+        ========================= */}
+
         <div className="flex flex-col gap-3">
+
+          {/* YES LOGOUT */}
+
           <button
-            className="w-full py-4 bg-black text-white rounded-2xl font-bold text-sm hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
+            className="w-full py-4 bg-black text-white rounded-2xl font-bold text-sm hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 disabled:opacity-50"
             onClick={handleLogout}
+            disabled={loading}
           >
-            Yes, Log Me Out
+            {loading ? "Logging Out..." : "Yes, Log Me Out"}
           </button>
+
+          {/* NO */}
 
           <button
             className="w-full py-4 bg-transparent text-gray-400 rounded-2xl font-bold text-sm hover:text-black transition-all"
             onClick={() => navigate(-1)}
+            disabled={loading}
           >
             No, Take Me Back
           </button>
+
         </div>
 
-        {/* Footer Brand */}
+        {/* =========================
+            FOOTER
+        ========================= */}
+
         <div className="mt-10 pt-6 border-t border-gray-50 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">
           MyStore Official
         </div>
+
       </div>
     </div>
   );
