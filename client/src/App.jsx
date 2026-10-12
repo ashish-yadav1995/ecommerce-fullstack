@@ -29,6 +29,7 @@ import MyProductsDashboard from "./pages/Dashboard/MyProductsDashboard"; // Adju
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EditProduct from "./pages/Dashboard/EditProduct";
+import Wishlist from "./pages/Wishlist";
 
 function App() {
   return (
@@ -113,6 +114,15 @@ function App() {
           }
         />
 
+        <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute>
+              <Wishlist />
+            </ProtectedRoute>
+          }
+        />
+
         {/* ================= ADMIN ROUTE ================= */}
         <Route
           path="/admin"
@@ -157,11 +167,11 @@ function App() {
             </ProtectedRoute>
           }
         />
-      {/* ================= 404 CATCH ALL ================= */}
+        {/* ================= 404 CATCH ALL ================= */}
         <Route path="*" element={<div>Page Not Found (404)</div>} />
       </Routes>
 
-    {/* // </BrowserRouter> */}
+      {/* // </BrowserRouter> */}
     </>
   );
 }

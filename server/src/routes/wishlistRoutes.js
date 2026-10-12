@@ -23,7 +23,7 @@ const {
 
 router.post("/", protect, addToWishlist);
 router.get("/", protect, getWishlist);
-router.delete("/:productId", protect, removeWishlistItem);
+router.delete("/:id", protect, removeWishlistItem);
 router.delete("/", protect, clearWishlist);
 
 module.exports = router;
