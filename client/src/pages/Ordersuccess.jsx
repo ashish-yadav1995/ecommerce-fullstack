@@ -7,7 +7,8 @@ function OrderSuccess() {
   // API Integration Note:
   // Checkout page se navigate karte waqt state me Backend API Response ka order object bhejna:
   // navigate("/order-success", { state: { order: apiResponse.data.order } });
-  const order = location.state?.order;
+  const order = location.state?.orderData;
+  debugger
 
   // Agar direct access karne ki koshish karein toh
   if (!order) {
@@ -78,7 +79,7 @@ function OrderSuccess() {
               Total Amount
             </span>
             <span className="font-black text-2xl text-black">
-              ₹{Number(order.totalAmount || order.total || 0).toFixed(2)}
+              ₹{Number(order.totalPrice || order.total || 0).toFixed(2)}
             </span>
           </div>
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import {
   loginUser,
@@ -39,35 +39,61 @@ function AuthProvider({ children }) {
     }
   };
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(
+    async () => {
+      try {
+        const response = await getAddresses();
+        console.log("Fetched addresses:", response.data);
+        setAddresses(response.data);
+      } catch (error) {
+        alert(error.message || "Failed to fetch addresses");
+      }
+    }, []);
+
+  const handleAddNewAddress = async (addressData) => {
     try {
-      const response = await getAddresses();
-      console.log("Fetched addresses:", response.data);
-      setAddresses(response.data);
+      await addAddress(addressData); // Server par add kiya
+      await fetchAddresses();        // Phir se list fetch karke state update ki
     } catch (error) {
-      alert(error.message || "Failed to fetch addresses");
+      console.error("Failed to add address", error);
     }
   };
 
-  const addNewAddress = async (addressData) => {
-    const response = await addAddress(addressData);
-    return response.data;
-  };
+  const handleUpdateAddress = async (id, addressData) => {
+    try {
+      const UpdatedAddress = await updateAddress(id, addressData)
+      await fetchAddresses()
 
-  // useEffect(async () => {
-  //   // fetchAddresses();
-  //   try {
-  //     const response = await getCurrentUser();
-  //     console.log(response.data);
-  //     const loggedInUser = response.data;
-  //     setUser(loggedInUser);
-  //   } catch (error) {
-  //     setUser(null);
-  //     alert(errorData?.message || "Invalid email or password.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
+      // const updatedAddress = addresses.map((item)=>{
+      //        return item._id === updateAddress._id ? updateAddress : item
+      // })
+
+      // setAddresses(UpdatedAddress)
+    } catch (error) {
+      console.error("Failed to update address", error);
+    }
+  }
+
+  const handleDeleteAddress = async (id) => {
+    try {
+      const response = await cancelAddress(id);
+      await fetchAddresses();
+
+    } catch (error) {
+      console.error("Failed to delete address", error);
+
+    }
+  }
+
+  const handleSetDefaultAddress = async (id) => {
+    try {
+      const response = await setDefaultAddress(id);
+      await fetchAddresses();
+    } catch (error) {
+      console.error("Failed to setDefault address", error);
+    }
+  }
+
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -76,7 +102,7 @@ function AuthProvider({ children }) {
         const loggedInUser = response.data;
         setUser(loggedInUser);
       } catch (error) {
-        console.error("Fetch User Error:", err);
+        console.error("Fetch User Error:", error);
         setUser(null);
       } finally {
         setLoading(false);
@@ -85,6 +111,14 @@ function AuthProvider({ children }) {
 
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchAddresses(); // Jab bhi user milega, yeh khud apne aap chal jayega
+    } else {
+      setAddresses([]); // Logout hone par list khali ho jayegi
+    }
+  }, [user, fetchAddresses]);
 
   // User Profile update hone par state refresh karne ke liye
   const updateUser = (updatedUserData) => {
@@ -101,11 +135,14 @@ function AuthProvider({ children }) {
         addresses,
         setAddresses,
         fetchAddresses,
-        addNewAddress,
+        handleAddNewAddress,
         login,
         logout,
         isAuthenticated: Boolean(user),
         updateUser,
+        handleUpdateAddress,
+        handleDeleteAddress,
+        handleSetDefaultAddress
       }}
     >
       {children}

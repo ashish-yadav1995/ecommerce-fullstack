@@ -84,28 +84,58 @@ exports.getWishlist = asyncHandler(async (req, res) => {
 
 });
 
-exports.removeWishlistItem = asyncHandler(async (req, res) => {
+// exports.removeWishlistItem = asyncHandler(async (req, res) => {
 
-    const { id } = req.params;
+//     const { id } = req.params;
+// console.log("id------------------",id)
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//         throw new ApiError(400, "Invalid Wishlist ID");
+//     }
+
+//     const wishlist = await Wishlist.findById(id);
+
+//     console.log(wishlist,"wishlist")
+
+//     if (!wishlist) {
+//         throw new ApiError(404, "Wishlist item not found");
+//     }
+
+//     await Wishlist.findByIdAndDelete(id);
+
+//     res.status(200).json({
+//         success: true,
+//         message: "Wishlist item removed successfully",
+//     });
+
+// });
+
+exports.removeWishlistItem = asyncHandler(async (req, res) => {
+    const { id } = req.params; 
+    const userId = req.user?._id; 
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApiError(400, "Invalid Wishlist ID");
+        throw new ApiError(400, "Invalid Product ID");
     }
 
-    const wishlist = await Wishlist.findById(id);
-
-    if (!wishlist) {
-        throw new ApiError(404, "Wishlist item not found");
-    }
-
-    await Wishlist.findByIdAndDelete(id);
-
-    res.status(200).json({
-        success: true,
-        message: "Wishlist item removed successfully",
+    // 2. Direct single step me user aur product dono match karke delete karein
+    // Isse 'findOne' aur 'findByIdAndDelete' do baar nahi chalana padega
+    const deletedWishlist = await Wishlist.findOneAndDelete({
+        user: userId,
+        product: id,
     });
 
+
+    if (!deletedWishlist) {
+        throw new ApiError(404, "Wishlist item not found for this user");
+    }
+
+    // 4. Success Response
+    res.status(200).json({
+        success: true,
+        message: "Product removed from wishlist successfully",
+    });
 });
+
 
 exports.clearWishlist = asyncHandler(async (req, res) => {
 

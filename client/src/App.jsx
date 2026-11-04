@@ -90,7 +90,7 @@ function App() {
           }
         />
         <Route
-          path="/trackorder"
+          path="/trackorder/:id"
           element={
             <ProtectedRoute>
               <TrackOrder />

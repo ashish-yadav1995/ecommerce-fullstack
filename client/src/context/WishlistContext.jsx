@@ -1,84 +1,3 @@
-// import { createContext, useContext, useEffect, useState } from "react";
-// import { useCart } from "./CartContext";
-// import {
-//   addToWishlist,
-//   getWishlist,
-//   removeToWishlist,
-//   clearWishlist,
-// } from "../services/wishlistApi";
-
-// const WishListContext = createContext();
-// export const useWishList = () => useContext(WishListContext);
-
-// function WishListProvider({ children }) {
-//   const [Wishlist, setWishlist] = useState([]);
-
-//   const { cart, removeFromCart } = useCart();
-
-//   useEffect(() => {
-
-//   }, [Wishlist]);
-
-//   const handleAddToWishlist = async (product) => {
-//     try {
-//       const response = await addToWishlist(product);
-//       return response.data
-
-//     } catch (error) {
-//         alert(error.response?.data?.message || "Failed to add in Wishlist");
-//     }
-
-//   };
-
-//   const handleGetWishlist = async() => {
-//     try {
-//       const response = await getWishlist();
-//       return response.data
-
-//     } catch (error) {
-//         alert(error.response?.data?.message || "Failed to get your favourite");
-//     }
-//   };
-
-//   const handleRemoveToWishlist = async (id) => {
-//   try {
-//       const response = await removeToWishlist(id);
-//       return response.data
-
-//     } catch (error) {
-//         alert(error.response?.data?.message || "Failed to Delete Your product");
-//     }
-//   };
-
-//   const handleClearWishlist = async() => {
-//   try {
-//       const response = await clearWishlist();
-//       return response.data
-
-//     } catch (error) {
-//         alert(error.response?.data?.message || "Failed to Clear favourite");
-//     }
-//   };
-
-//   return (
-//     <WishListContext.Provider
-//       value={{
-//         Wishlist,
-//         handleAddToWishlist,
-//         handleGetWishlist,
-//         handleRemoveToWishlist,
-//         handleClearWishlist,
-//       }}
-//     >
-//       {children}
-//     </WishListContext.Provider>
-//   );
-// }
-
-// export default WishListProvider;
-
-// ==========================================
-
 import {
   createContext,
   useCallback,
@@ -148,7 +67,7 @@ export function WishlistProvider({ children }) {
       return;
     }
 
-    fetchWishlist().catch(() => {});
+    fetchWishlist().catch((error) => {console.log(error)});
   }, [user, authLoading, fetchWishlist]);
 
   // Add product
@@ -184,7 +103,7 @@ export function WishlistProvider({ children }) {
     },
     [user, wishlistItems, fetchWishlist],
   );
-
+console.log("wishlistItems form context",wishlistItems)
   // Remove using Wishlist document ID
   const removeItem = useCallback(async (wishlistItemId) => {
     if (!wishlistItemId) {
@@ -197,7 +116,7 @@ export function WishlistProvider({ children }) {
       await removeToWishlist(wishlistItemId);
 
       setWishlistItems((previous) =>
-        previous.filter((item) => String(item._id) !== String(wishlistItemId)),
+        previous.filter((item) => String(item.product._id) !== String(wishlistItemId)),
       );
 
       return true;
@@ -207,7 +126,7 @@ export function WishlistProvider({ children }) {
           err.message ||
           "Failed to remove wishlist item",
       );
-      throw err;
+      // throw err;
     }
   }, []);
 
@@ -261,7 +180,7 @@ export function WishlistProvider({ children }) {
   );
 }
 
-export function useWishlist() {
+export function useWishList() {
   const context = useContext(WishlistContext);
 
   if (!context) {
@@ -273,23 +192,3 @@ export function useWishlist() {
 
 export default WishlistContext;
 
-// ======================================
-
-// wishlist.jsx me aayega  Add/remove toggle ke liye:
-const handleWishlist = async () => {
-  try {
-    if (saved) {
-      const item = wishlistItems.find(
-        (entry) =>
-          String(entry.product?._id || entry.product) ===
-          String(product._id)
-      );
-
-      if (item) await removeItem(item._id);
-    } else {
-      await addItem(product._id);
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};

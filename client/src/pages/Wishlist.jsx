@@ -1,52 +1,29 @@
 import React, { useState } from "react";
+import { useWishList } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
+import { Link,useNavigate } from "react-router-dom";
 
 function Wishlist() {
-  // ----------------------------------------------------
-  // Mock State UI Testing ke liye
-  // ----------------------------------------------------
-  const [wishlistItems, setWishlistItems] = useState([
-    {
-      _id: "p1",
-      title: "Minimalist Leather Sneakers",
-      category: "Footwear",
-      price: 3499,
-      images: [
-        "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
-      ],
-    },
-    {
-      _id: "p2",
-      title: "Wireless Over-Ear Headphones",
-      category: "Electronics",
-      price: 5999,
-      images: [
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
-      ],
-    },
-    {
-      _id: "p3",
-      title: "Classic Oversized Cotton Hoodie",
-      category: "Apparel",
-      price: 1999,
-      images: [
-        "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80",
-      ],
-    },
-  ]);
 
-  // UI Handlers (Mock Triggers)
-  const handleRemoveFromWishlist = (id) => {
-    setWishlistItems((prev) => prev.filter((item) => item._id !== id));
+  const { wishlistItems, setWishlistItems, removeItem, clearAll } = useWishList();
+  const { handleAddToCart } = useCart()
+  const navigate = useNavigate();
+
+
+
+  const handleMoveToCart = async (product) => {
+    alert(`"${product.name}" moved to cart successfully!`);
+    const isRemove = await removeItem(product._id);
+    if (isRemove) {
+      handleAddToCart(product)
+    }
   };
 
-  const handleMoveToCart = (product) => {
-    alert(`"${product.title}" moved to cart successfully!`);
-    handleRemoveFromWishlist(product._id);
-  };
 
   // ----------------------------------------------------
   // 1. EMPTY STATE UI (Jab saare items remove ho jayein)
   // ----------------------------------------------------
+// Agar wishlist khali ho toh yeh section dikhega
   if (wishlistItems.length === 0) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 bg-gray-50/50">
@@ -87,14 +64,14 @@ function Wishlist() {
   }
 
   // ----------------------------------------------------
-  // 2. MAIN WISHLIST GRID UI
+  // 2. MAIN WISHLIST GRID UI (With Clear All Button in Header)
   // ----------------------------------------------------
   return (
     <div className="min-h-screen bg-gray-50/50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        
+
         {/* Header */}
-        <div className="flex justify-between items-end mb-8 border-b border-gray-200/60 pb-5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 border-b border-gray-200/60 pb-5 gap-4">
           <div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight">
               My Wishlist
@@ -104,24 +81,48 @@ function Wishlist() {
             </p>
           </div>
 
-          <button
-            onClick={() => alert("Explore products clicked")}
-            className="text-xs font-bold text-gray-500 uppercase tracking-wider hover:text-black transition-colors hidden sm:block"
-          >
-            Continue Shopping →
-          </button>
+          {/* Right Section: Continue Shopping & Clear All Button */}
+          <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+            <Link
+              to="/"
+              className="text-sm font-semibold text-blue-600 hover:underline"
+            >
+              Continue Shopping
+            </Link>
+
+            {/* Clear All Button */}
+            {wishlistItems.length > 0 && (
+              <button
+                onClick={async () => {
+                  if (window.confirm("Are you sure you want to empty your wishlist?")) {
+                    try {
+                      await clearAll();
+                    } catch (error) {
+                      console.error("Failed to clear wishlist:", error);
+                    }
+                  }
+                }}
+                className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs uppercase tracking-wider rounded-xl transition-colors border border-red-200/60 flex items-center gap-1.5 shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Clear All
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Product Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wishlistItems.map((product) => (
+          {wishlistItems.map((item) => (
             <div
-              key={product._id}
+              key={item.product._id}
               className="group bg-white rounded-3xl p-4 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 relative flex flex-col justify-between"
             >
               {/* Delete / Remove Icon Button */}
               <button
-                onClick={() => handleRemoveFromWishlist(product._id)}
+                onClick={() => removeItem(item.product._id || item.product)}
                 className="absolute top-6 right-6 z-10 w-9 h-9 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm"
                 title="Remove from Wishlist"
               >
@@ -145,8 +146,8 @@ function Wishlist() {
                 {/* Image */}
                 <div className="w-full h-56 bg-gray-100 rounded-2xl overflow-hidden mb-4 relative">
                   <img
-                    src={product.images[0]}
-                    alt={product.title}
+                    src={item.product.images[0]}
+                    alt={item.product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
@@ -154,20 +155,20 @@ function Wishlist() {
                 {/* Content */}
                 <div className="px-1 mb-4">
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-1">
-                    {product.category}
+                    {item.product.category?.name || "Category"}
                   </span>
                   <h3 className="font-bold text-gray-900 text-base line-clamp-1">
-                    {product.title}
+                    {item.product.name}
                   </h3>
                   <p className="font-black text-lg text-black mt-2">
-                    ₹{Number(product.price).toFixed(2)}
+                    ₹{Number(item.product.price).toFixed(2)}
                   </p>
                 </div>
               </div>
 
               {/* Move to Cart Button */}
               <button
-                onClick={() => handleMoveToCart(product)}
+                onClick={() => handleMoveToCart(item.product)}
                 className="w-full py-3.5 px-4 bg-black text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-800 active:scale-[0.98] transition-all shadow-md shadow-gray-200"
               >
                 <svg

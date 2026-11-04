@@ -17,62 +17,6 @@ import {
 } from "../services/cartApi";
 
 function CartProvider({ children }) {
-  // { ======================================== start
-  // const [cart, setCart] = useState([]);
-  //   const [cart, setCart] = useState(() => {
-  //   const saved = localStorage.getItem("cart");
-  //   return saved ? JSON.parse(saved) : [];
-  // });
-
-  //   useEffect(()=>{
-  //    localStorage.setItem("cart", JSON.stringify(cart))
-  //   },[cart])
-
-  //   const addToCart = (product) => {
-  //     setCart((prev) => {
-  //       const exist = cart.find((item) => item.id === product.id);
-
-  //       if (exist) {
-  //         return prev.map((item) => {
-  //           return item.id === product.id
-  //             // ? { ...item, quantity:item.quantity < 1 ? item.quantity + 1: 1 }
-  //              ? { ...item, quantity: item.quantity + 1 }
-  //             : item;
-  //         });
-  //       }
-  //       return [...prev, { ...product, quantity: 1 }];
-  //     });
-  //   };
-
-  //   const removeFromCart = (id) => {
-  //     setCart((prev) => prev.filter((item) => item.id !== id));
-  //   };
-
-  //   const increaseQty = (id) => {
-  //     setCart((prev) => {
-  //       return prev.map((item) =>
-  //         item.id === id ? { ...item, quantity: item.quantity + 1 } : item,
-  //       );
-  //     });
-  //   };
-
-  //   const decreaseQty = (id) => {
-  //     setCart((prev) => {
-  //       return prev
-  //         .map((item) =>
-  //           item.id === id ? { ...item, quantity: item.quantity - 1 } : item,
-  //         )
-  //         .filter((newItem) => {
-  //           return newItem.quantity > 0;
-  //         });
-  //     });
-  //   };
-
-  //   const clearCart = ()=>{
-  //     setCart([])
-  //   }
-
-  // }  ============================================== end
 
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
@@ -82,17 +26,12 @@ function CartProvider({ children }) {
   const [actionLoading, setActionLoading] = useState(false);
   const [getTotalItems, setGetTotalItems] = useState(0);
 
-  // if (cart && cart.length > 0) {
-  //   // const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
-  //   setGetTotalItems(cart.totalItems);
-  // }
-  console.log("getTotalItems in CartContext:", getTotalItems);
 
   const handleAddToCart = async (product) => {
     try {
       const response = await addToCart(product._id, { quantity: 1 });
       alert(response.message || "Product added to cart successfully!");
-      if(response.success){
+      if (response.success) {
         fetchCart(); // Fetch the updated cart after adding an item
       }
     } catch (error) {
@@ -168,7 +107,6 @@ function CartProvider({ children }) {
       setActionLoading(true);
 
       const response = await removeCartItem(productId);
-
       if (response.cart) {
         const updatedItems = response.cart.map((item) => {
           const product = item.product;
@@ -185,8 +123,9 @@ function CartProvider({ children }) {
           (sum, item) => sum + item.subtotal,
           0,
         );
-
         setGrandTotal(total);
+        setGetTotalItems(response.cart.length || 0);
+        return response
       }
     } catch (error) {
       alert(error.response?.data?.message || "Failed to remove item");

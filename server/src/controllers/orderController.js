@@ -102,7 +102,7 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 
     message: "Order placed successfully",
 
-    data: order,
+     order,
   });
 });
 
@@ -138,7 +138,9 @@ exports.getMyOrders = asyncHandler(async (req, res) => {
 });
 
 exports.getOrderById = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  console.log("1-------------------------------------------",req)
+  console.log("2-------------------------------------------",req.params)
+  const id = req.params.id;
 
   // Validate Order ID
   if (!mongoose.Types.ObjectId.isValid(id)) {

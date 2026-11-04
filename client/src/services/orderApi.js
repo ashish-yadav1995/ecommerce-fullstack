@@ -14,13 +14,14 @@ export const getMyOrders = async ()=>{
 
 
 export const getOrderById = async (orderId) => {
-    const response = await api.get(`./order/${orderId}`)
+     debugger
+    const response = await api.get(`/order/${orderId}`)
     
     return response.data;
 }
 
 export const cancelOrder = async (orderId) => {
-    const response = await api.patch(`./order/${orderId}/cancel`)
+    const response = await api.patch(`/order/${orderId}/cancel`)
 
     return response.data;
 }

@@ -194,8 +194,9 @@ exports.deleteAddress = asyncHandler(async (req, res) => {
 
 
 exports.setDefaultAddress = asyncHandler(async (req, res) => {
-
+console.log("run----------------")
     const { id } = req.params;
+
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new ApiError(400, "Invalid Address ID");
@@ -208,7 +209,7 @@ exports.setDefaultAddress = asyncHandler(async (req, res) => {
     }
 
      //  Check Ownership
-     if (address.user.toString() !== userId.toString()) {
+     if (address.user.toString() !== req.user._id.toString()) {
       throw new ApiError(403, "You are not authorized to modify this address");
       }
 

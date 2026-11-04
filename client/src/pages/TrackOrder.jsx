@@ -1,57 +1,82 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import { useOrder } from '../context/OrderContext';
 
 const TrackOrder = () => {
   const location = useLocation();
-  const order = location.state?.order;
+  const { handleGetOrderById } = useOrder();
+  const [order, setOrder] = useState(location.state?.order || null)  // jab user track journey button pe clcik karke aaye toh order track karne ke liye toh user ko fast data dikhega iske like navigate se data liya hua agar user url copy karke paste karega dusre tab me toh use order naame ke state me undefined milega toh isiko handle karne k liye api call kiya hu useEffect ke undar
+  const { id } = useParams();
 
   console.log("order", order);
+  debugger
+  // Schema ke enum values ke sath status list ko match kiya gaya hai
+  const statusList = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
 
-  // Status list ko UI ke order ke hisaab se rakhein
-  // Index 0: Order Placed (Hamesha complete rahega)
-  // Index 1: PROCESSING
-  // Index 2: SHIPPED... and so on.
-  const statusList = ["ORDER_PLACED", "PROCESSING", "SHIPPED", "OUT FOR DELIVERY", "DELIVERED"];
-  
-  // Current status ka index nikalein. 
-  // Agar status "PROCESSING" hai toh index 1 aayega.
-  const currentStepIndex = statusList.indexOf(order?.status);
+  // Current status ka index nikalein
+  const currentStepIndex = statusList.indexOf(order?.orderStatus || "Pending");
 
   const steps = [
-    { 
-      label: "Order Placed", 
-      date: order?.orderDate_and_time ? new Date(order.orderDate_and_time).toLocaleString('en-US', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Pending",
-      // Order place hamesha true rahega
-      completed: true 
+    {
+      label: "Order Pending / Placed",
+      date: order?.createdAt ? new Date(order.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Pending",
+      completed: currentStepIndex >= 0
     },
-    { 
-      label: "Processing", 
-      date: order?.processingTime || "Pending",
+    {
+      label: "Confirmed",
+      date: order?.confirmedTime || "",
       completed: currentStepIndex >= 1
     },
-    { 
-      label: "Shipped", 
-      date: order?.shippedTime || "Pending",
+    {
+      label: "Processing",
+      date: order?.processingTime || "",
       completed: currentStepIndex >= 2
     },
-    { 
-      label: "OUT FOR DELIVERY", 
-      date: order?.outForDeliveryTime || "Pending",
+    {
+      label: "Shipped",
+      date: order?.shippedTime || "",
       completed: currentStepIndex >= 3
     },
-    { 
-      label: "DELIVERED", 
-      date: order?.deliveredTime || "Pending",
+    {
+      label: "Delivered",
+      date: order?.deliveredTime || "",
       completed: currentStepIndex >= 4
     }
   ];
+
+  useEffect(() => {
+
+    if (order) return;
+    const fetchOrder = async () => {
+      try {
+        const response = await handleGetOrderById(id)
+        setOrder(response.data)
+      } catch (error) {
+        console.log("Error fetching order in component", error);
+      }
+    }
+
+    if (!order) {
+      fetchOrder()
+    }
+  }, [id, handleGetOrderById, order])
+
+  // Agar order Cancel ho gaya ho toh uske liye alag UI ya message dikha sakte hain
+  if (order?.orderStatus === "Cancelled") {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center space-y-4">
+        <h2 className="text-3xl font-black uppercase tracking-tighter text-red-600">Order Cancelled</h2>
+        <p className="text-gray-500 text-xs uppercase tracking-widest">This order has been cancelled.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-10 animate-in slide-in-from-right-4 duration-700">
       <div className="text-center">
         <h2 className="text-4xl font-black uppercase italic tracking-tighter">Track Your Package</h2>
         <p className="text-gray-400 text-xs font-black uppercase tracking-[0.3em] mt-2">
-          Status: {order?.status}
+          Status: {order?.orderStatus || "Pending"}
         </p>
       </div>
 
@@ -64,10 +89,10 @@ const TrackOrder = () => {
             <div key={index} className="flex gap-8 items-start relative z-10">
               {/* Dot Logic */}
               <div className={`w-8 h-8 rounded-full border-4 border-white shadow-md flex items-center justify-center transition-colors duration-500
-                ${step.completed ? 'bg-black' : 'bg-gray-200'}`}>
-                {step.completed && <span className="text-white text-[10px]">✓</span>}
+                ${step.completed ? 'bg-black text-white' : 'bg-gray-200 text-transparent'}`}>
+                {step.completed && <span className="text-[10px]">✓</span>}
               </div>
-              
+
               <div className="flex-1">
                 <h4 className={`text-sm font-black uppercase tracking-tight transition-colors duration-500 ${step.completed ? 'text-black' : 'text-gray-300'}`}>
                   {step.label}

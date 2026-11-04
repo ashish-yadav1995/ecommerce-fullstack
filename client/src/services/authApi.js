@@ -106,7 +106,8 @@ export const cancelAddress = async (id) => {
 };
 
 export const setDefaultAddress = async (id) => {
-  const response = await api.patch(`/address/default${id}`);
+  const response = await api.patch(`/address/default/${id}`);
+  
 
   return response.data;
 };

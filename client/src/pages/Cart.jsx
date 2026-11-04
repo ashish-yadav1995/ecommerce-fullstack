@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useWishList } from "../context/WishlistContext";
 
 import {
   getCart,
@@ -11,11 +12,22 @@ import {
 
 function Cart() {
   const navigate = useNavigate();
-  const {cart, fetchCart, loading, handleQuantityChange, handleRemoveItem, handleClearCart, grandTotal, actionLoading} = useCart();
+  const { cart, fetchCart, loading, handleQuantityChange, handleRemoveItem, handleClearCart, grandTotal, actionLoading } = useCart();
+  const {addItem} = useWishList();
 
   useEffect(() => {
     fetchCart();
   }, []);
+
+  const handleMoveToWishlist = async (product)=>{
+    console.log(product)
+   const response = await handleRemoveItem(product)
+   console.log("after response", response)
+   if(response.success){
+    await addItem(product)
+   }
+
+  }
 
 
   // ==========================================
@@ -61,10 +73,8 @@ function Cart() {
     <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* HEADER */}
-
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-3xl font-bold">My Cart</h1>
-
           <button
             onClick={handleClearCart}
             disabled={actionLoading}
@@ -76,7 +86,6 @@ function Cart() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* CART ITEMS */}
-
           <div className="lg:col-span-2 space-y-4">
             {cart.map((item) => {
               const product = item.product;
@@ -90,13 +99,14 @@ function Cart() {
                   ? product.images[0]
                   : "https://via.placeholder.com/150";
 
+              // 💰 Price Logic Setup (Discount check ke sath)
+              const discountPrice = product.discountPrice > 0 ? product.discountPrice : product.price;
               const subtotal = product.price * item.quantity;
 
               return (
                 <div key={item._id} className="bg-white rounded-lg shadow p-4">
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* IMAGE */}
-
                     <div className="w-full sm:w-32 h-32 flex-shrink-0">
                       <img
                         src={image}
@@ -106,37 +116,45 @@ function Cart() {
                     </div>
 
                     {/* PRODUCT INFO */}
-
                     <div className="flex-1">
                       <div className="flex justify-between gap-4">
                         <div>
                           <h2 className="text-xl font-semibold">
                             {product.name}
                           </h2>
-
                           <p className="text-gray-500">{product.brand}</p>
                         </div>
 
-                        <button
-                          onClick={() => handleRemoveItem(product._id)}
-                          disabled={actionLoading}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          Remove
-                        </button>
+                        {/* 🛠️ ACTIONS BLOCK (Remove & Move to Wishlist) */}
+                        <div className="flex flex-col items-end gap-1">
+                          <button
+                            onClick={() => handleRemoveItem(product._id)}
+                            disabled={actionLoading}
+                            className="text-red-600 hover:text-red-800 text-sm font-medium transition-colors"
+                          >
+                            Remove
+                          </button>
+
+                          {/* ✨ NAYA OPTION: Move To Wishlist */}
+                          <button
+                            onClick={() => handleMoveToWishlist(product._id)}
+                            disabled={actionLoading}
+                            className="text-gray-500 hover:text-blue-600 text-xs font-normal underline transition-colors"
+                          >
+                            Move to Wishlist
+                          </button>
+                        </div>
                       </div>
 
                       {/* PRICE */}
-
                       <div className="mt-3">
                         {product.discountPrice > 0 ? (
                           <div className="flex items-center gap-2">
                             <span className="text-lg font-bold text-green-600">
-                              ₹{product.discountPrice}
-                            </span>
-
-                            <span className="text-sm text-gray-400 line-through">
                               ₹{product.price}
+                            </span>
+                            <span className="text-sm text-gray-400 line-through">
+                              ₹{product.discountPrice}
                             </span>
                           </div>
                         ) : (
@@ -147,7 +165,6 @@ function Cart() {
                       </div>
 
                       {/* QUANTITY */}
-
                       <div className="flex items-center justify-between mt-4">
                         <div className="flex items-center border rounded-lg">
                           <button
@@ -176,10 +193,8 @@ function Cart() {
                         </div>
 
                         {/* SUBTOTAL */}
-
                         <div className="text-right">
                           <p className="text-sm text-gray-500">Subtotal</p>
-
                           <p className="text-xl font-bold">₹{subtotal}</p>
                         </div>
                       </div>
@@ -195,14 +210,12 @@ function Cart() {
           </div>
 
           {/* ORDER SUMMARY */}
-
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow p-6 sticky top-4">
               <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
 
               <div className="flex justify-between mb-3">
                 <span className="text-gray-600">Items</span>
-
                 <span>
                   {cart.reduce((total, item) => total + item.quantity, 0)}
                 </span>
@@ -210,14 +223,12 @@ function Cart() {
 
               <div className="flex justify-between mb-3">
                 <span className="text-gray-600">Subtotal</span>
-
                 <span>₹{grandTotal}</span>
               </div>
 
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between text-xl font-bold">
                   <span>Total</span>
-
                   <span>₹{grandTotal}</span>
                 </div>
               </div>
