@@ -66,7 +66,8 @@ function CartProvider({ children }) {
   // INCREASE / DECREASE QUANTITY
   // ==========================================
 
-  const handleQuantityChange = async (productId, change) => {
+  const handleQuantityChange = async (e,productId, change) => {
+   e.stopPropagation() // Stop event propagation to prevent navigation
     try {
       setActionLoading(true);
 

@@ -13,19 +13,19 @@ import {
 function Cart() {
   const navigate = useNavigate();
   const { cart, fetchCart, loading, handleQuantityChange, handleRemoveItem, handleClearCart, grandTotal, actionLoading } = useCart();
-  const {addItem} = useWishList();
+  const { addItem } = useWishList();
 
   useEffect(() => {
     fetchCart();
   }, []);
 
-  const handleMoveToWishlist = async (product)=>{
-    console.log(product)
-   const response = await handleRemoveItem(product)
-   console.log("after response", response)
-   if(response.success){
-    await addItem(product)
-   }
+  const handleMoveToWishlist = async (e, product) => {
+    e.stopPropagation() // Stop event propagation to prevent navigation
+    const response = await handleRemoveItem(product)
+    console.log("after response", response)
+    if (response.success) {
+      await addItem(product)
+    }
 
   }
 
@@ -103,108 +103,121 @@ function Cart() {
               const discountPrice = product.discountPrice > 0 ? product.discountPrice : product.price;
               const subtotal = product.price * item.quantity;
 
+              console.log("product id from cart.jsx", product._id)
+
               return (
-                <div key={item._id} className="bg-white rounded-lg shadow p-4">
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    {/* IMAGE */}
-                    <div className="w-full sm:w-32 h-32 flex-shrink-0">
-                      <img
-                        src={image}
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    </div>
+                <Link
+                  to="/productdetail"
+                  state={{ id: product._id }}
+                  className="flex-1 flex flex-col"
+                >
 
-                    {/* PRODUCT INFO */}
-                    <div className="flex-1">
-                      <div className="flex justify-between gap-4">
-                        <div>
-                          <h2 className="text-xl font-semibold">
-                            {product.name}
-                          </h2>
-                          <p className="text-gray-500">{product.brand}</p>
-                        </div>
-
-                        {/* 🛠️ ACTIONS BLOCK (Remove & Move to Wishlist) */}
-                        <div className="flex flex-col items-end gap-1">
-                          <button
-                            onClick={() => handleRemoveItem(product._id)}
-                            disabled={actionLoading}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium transition-colors"
-                          >
-                            Remove
-                          </button>
-
-                          {/* ✨ NAYA OPTION: Move To Wishlist */}
-                          <button
-                            onClick={() => handleMoveToWishlist(product._id)}
-                            disabled={actionLoading}
-                            className="text-gray-500 hover:text-blue-600 text-xs font-normal underline transition-colors"
-                          >
-                            Move to Wishlist
-                          </button>
-                        </div>
+                  <div key={item._id} className="bg-white rounded-lg shadow p-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      {/* IMAGE */}
+                      <div className="w-full sm:w-32 h-32 flex-shrink-0">
+                        <img
+                          src={image}
+                          alt={product.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
                       </div>
 
-                      {/* PRICE */}
-                      <div className="mt-3">
-                        {product.discountPrice > 0 ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg font-bold text-green-600">
+                      {/* PRODUCT INFO */}
+                      <div className="flex-1">
+                        <div className="flex justify-between gap-4">
+                          <div>
+                            <h2 className="text-xl font-semibold">
+                              {product.name}
+                            </h2>
+                            <p className="text-gray-500">{product.brand}</p>
+                          </div>
+
+                          {/* 🛠️ ACTIONS BLOCK (Remove & Move to Wishlist) */}
+                          <div className="flex flex-col items-end gap-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleRemoveItem(product._id); }}
+                              disabled={actionLoading}
+                              className="text-red-600 hover:text-red-800 text-sm font-medium transition-colors"
+                            >
+                              Remove
+                            </button>
+
+                            {/* ✨ NAYA OPTION: Move To Wishlist */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleMoveToWishlist(e, product._id); }}
+                              disabled={actionLoading}
+                              className="text-gray-500 hover:text-blue-600 text-xs font-normal underline transition-colors"
+                            >
+                              Move to Wishlist
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* PRICE */}
+                        <div className="mt-3">
+                          {product.discountPrice > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg font-bold text-green-600">
+                                ₹{product.price}
+                              </span>
+                              <span className="text-sm text-gray-400 line-through">
+                                ₹{product.discountPrice}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-lg font-bold">
                               ₹{product.price}
                             </span>
-                            <span className="text-sm text-gray-400 line-through">
-                              ₹{product.discountPrice}
+                          )}
+                        </div>
+
+                        {/* QUANTITY */}
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center border rounded-lg">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation(); e.preventDefault();
+                                handleQuantityChange(e, product._id, -1)
+                              }}
+                              disabled={actionLoading || item.quantity <= 1}
+                              className="px-4 py-2 text-xl hover:bg-gray-100 disabled:opacity-40"
+                            >
+                              −
+                            </button>
+
+                            <span className="px-5 py-2 border-x font-semibold">
+                              {item.quantity}
                             </span>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation(); e.preventDefault();
+                                handleQuantityChange(e, product._id, 1)
+                              }}
+                              disabled={
+                                actionLoading || item.quantity >= product.stock
+                              }
+                              className="px-4 py-2 text-xl hover:bg-gray-100 disabled:opacity-40"
+                            >
+                              +
+                            </button>
                           </div>
-                        ) : (
-                          <span className="text-lg font-bold">
-                            ₹{product.price}
-                          </span>
-                        )}
-                      </div>
 
-                      {/* QUANTITY */}
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center border rounded-lg">
-                          <button
-                            onClick={() =>
-                              handleQuantityChange(product._id, -1)
-                            }
-                            disabled={actionLoading || item.quantity <= 1}
-                            className="px-4 py-2 text-xl hover:bg-gray-100 disabled:opacity-40"
-                          >
-                            −
-                          </button>
-
-                          <span className="px-5 py-2 border-x font-semibold">
-                            {item.quantity}
-                          </span>
-
-                          <button
-                            onClick={() => handleQuantityChange(product._id, 1)}
-                            disabled={
-                              actionLoading || item.quantity >= product.stock
-                            }
-                            className="px-4 py-2 text-xl hover:bg-gray-100 disabled:opacity-40"
-                          >
-                            +
-                          </button>
+                          {/* SUBTOTAL */}
+                          <div className="text-right">
+                            <p className="text-sm text-gray-500">Subtotal</p>
+                            <p className="text-xl font-bold">₹{subtotal}</p>
+                          </div>
                         </div>
 
-                        {/* SUBTOTAL */}
-                        <div className="text-right">
-                          <p className="text-sm text-gray-500">Subtotal</p>
-                          <p className="text-xl font-bold">₹{subtotal}</p>
-                        </div>
+                        <p className="text-sm text-gray-500 mt-2">
+                          Available stock: {product.stock}
+                        </p>
                       </div>
-
-                      <p className="text-sm text-gray-500 mt-2">
-                        Available stock: {product.stock}
-                      </p>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

@@ -49,7 +49,7 @@ exports.placeOrder = asyncHandler(async (req, res) => {
       throw new ApiError(400, `${product.name} is out of stock`);
     }
 
-    const price = product.discountPrice || product.price;
+    const price =  product?.price;
 
     orderItems.push({
       product: product._id,

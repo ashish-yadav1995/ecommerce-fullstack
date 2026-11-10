@@ -21,17 +21,22 @@ function ProductDetail() {
   const { user } = useAuth();
   const [isEditReviewOpen, setIsEditReviewOpen] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
-
-  const id = location.state?.id || paramId;
+  const id = location?.state?.id || paramId;
 
   // Check karein ki current product wishlist me pehle se hai ya nahi
-    const isWishlisted = product?._id ? isInWishlist(product._id) : false;
+  const isWishlisted = product?._id ? isInWishlist(product._id) : false;
 
-    console.log("wishlistItems form productdetail",wishlistItems)
+  // Filter reviews for the current product
+  const updatedReviews = reviews.filter((review) => {
+    return review.product === id
+  });
+  console.log("updatedReviews form productdetail", updatedReviews)
+
+  console.log("wishlistItems form productdetail", wishlistItems)
 
 
   // Heart Icon Click Handler
-  const handleWishlistClick = (e) => {
+  const handleWishlistClick = (currentProduct) => {
     // e.preventDefault(); // Link click trigger hone se rokne ke liye
     // e.stopPropagation(); // Event bubbling rokne ke liye
 
@@ -250,9 +255,9 @@ function ProductDetail() {
         </h2>
 
         {/* Fix 2: Safe Reviews Mapping (Handling Array vs Number) */}
-        {Array.isArray(reviews) && reviews.length > 0 ? (
+        {Array.isArray(updatedReviews) && updatedReviews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {reviews.map((rev, index) => (
+            {updatedReviews.map((rev, index) => (
               <div
                 key={index}
                 className="bg-gray-50 p-6 rounded-2xl border border-gray-100 transition hover:shadow-md"

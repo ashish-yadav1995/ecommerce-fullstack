@@ -12,23 +12,39 @@ function ReviewProvider({ children }) {
     const [averageRating, setAverageRating] = useState(0);
 
     const handleAddReviews = async (data) => {
+        debugger
         const response = await addReviews(data);
+        if (response.success) {
+            setReviews(prevReviews => [...prevReviews, response.data]);
+        }
         console.log(response);
         return response;
     };
 
-    const handleGetSinglegProductReviews = useCallback(async (id) => {
-        try {
-            const response = await getSingleProductReviews(id);
-            console.log("from reviewContext", response);
-            debugger
-            setReviews(response.data)
-            setTotalReviews(response.totalReviews);
-            setAverageRating(response.averageRating);
-        } catch (error) {
-            console.log("error to fetching reviews", error)
-        }
-    }, [])
+    
+const handleGetSinglegProductReviews = useCallback(async (id) => {
+  try {
+    const response = await getSingleProductReviews(id);
+
+    console.log("from reviewContext", response);
+
+    setReviews((prevReviews) => {
+      const updatedReviews = [...prevReviews, ...response.data];
+
+      return updatedReviews.filter((item, index, self) =>
+        index === self.findIndex(
+          (review) => review._id === item._id
+        )
+      );
+    });
+
+    setTotalReviews(response.totalReviews);
+    setAverageRating(response.averageRating);
+
+  } catch (error) {
+    console.log("error to fetching reviews", error);
+  }
+}, []);
 
     const handleUpdateReviews = async (id, data) => {
         const response = await updateReviews(id, data);

@@ -14,6 +14,11 @@ function OrderProvider({ children }) {
   const placeOrder = async (addressId, paymentMethod) => {
     try {
       const response = await createOrder({ addressId, paymentMethod });
+      if (response.success) {
+        // Context ke andar hi state update kar do
+        // setOrders((prevOrders) => [...prevOrders, response.order]);
+        setOrders((prevOrders) => [response.order, ...prevOrders]);  // New order ko list ke start me add karne ke liye
+      }
       return response.order;
     } catch (error) {
       console.error("Error placing order:", error);
@@ -36,14 +41,14 @@ function OrderProvider({ children }) {
     handleGetMyOrders();
   }, [handleGetMyOrders]); // <-- Yahan 'orders' nahi hona chahiye!
 
-const handleGetOrderById = useCallback(async (orderId) => {
-  // Yahan try-catch ki zaroorat nahi hai agar error ko component me handle kar rahe hain
-  const response = await getOrderById(orderId);
-  return response;
-}, []);
+  const handleGetOrderById = useCallback(async (orderId) => {
+    // Yahan try-catch ki zaroorat nahi hai agar error ko component me handle kar rahe hain
+    const response = await getOrderById(orderId);
+    return response;
+  }, []);
 
   return (
-    <OrderContext.Provider value={{ placeOrder, orders, handleGetMyOrders, handleGetOrderById }}>
+    <OrderContext.Provider value={{ placeOrder, orders, setOrders, handleGetMyOrders, handleGetOrderById }}>
       {children}
     </OrderContext.Provider>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useWishList } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
-import { Link,useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Wishlist() {
 
@@ -23,7 +23,7 @@ function Wishlist() {
   // ----------------------------------------------------
   // 1. EMPTY STATE UI (Jab saare items remove ho jayein)
   // ----------------------------------------------------
-// Agar wishlist khali ho toh yeh section dikhega
+  // Agar wishlist khali ho toh yeh section dikhega
   if (wishlistItems.length === 0) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 bg-gray-50/50">
@@ -142,29 +142,35 @@ function Wishlist() {
               </button>
 
               {/* Top Details */}
-              <div>
-                {/* Image */}
-                <div className="w-full h-56 bg-gray-100 rounded-2xl overflow-hidden mb-4 relative">
-                  <img
-                    src={item.product.images[0]}
-                    alt={item.product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
+              <Link
+                to="/productdetail"
+                state={{ id: item.product._id }}
+                className="flex-1 flex flex-col"
+              >
+                <div>
+                  {/* Image */}
+                  <div className="w-full h-56 bg-gray-100 rounded-2xl overflow-hidden mb-4 relative">
+                    <img
+                      src={item.product.images[0]}
+                      alt={item.product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
 
-                {/* Content */}
-                <div className="px-1 mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-1">
-                    {item.product.category?.name || "Category"}
-                  </span>
-                  <h3 className="font-bold text-gray-900 text-base line-clamp-1">
-                    {item.product.name}
-                  </h3>
-                  <p className="font-black text-lg text-black mt-2">
-                    ₹{Number(item.product.price).toFixed(2)}
-                  </p>
+                  {/* Content */}
+                  <div className="px-1 mb-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-1">
+                      {item.product.category?.name || "Category"}
+                    </span>
+                    <h3 className="font-bold text-gray-900 text-base line-clamp-1">
+                      {item.product.name}
+                    </h3>
+                    <p className="font-black text-lg text-black mt-2">
+                      ₹{Number(item.product.price).toFixed(2)}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </Link>
 
               {/* Move to Cart Button */}
               <button

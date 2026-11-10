@@ -1,355 +1,10 @@
-// import React, { useEffect, useState } from 'react';
-// import { useLocation, useNavigate, useParams } from 'react-router-dom';
-// import { useOrder } from '../context/OrderContext';
-
-// const OrderDetails = () => {
-//   const { state } = useLocation();
-//   const navigate = useNavigate();
-//   const { handleGetOrderById } = useOrder();
-//   // const order = state?.order; // Navigate karte waqt jo order bheja tha
-//   const { id } = useParams()
-//   const [order, setOrder] = useState(null);
-
-//   useEffect(() => {
-//   const fetchOrder = async () => {
-//     try {
-//       const response = await handleGetOrderById(id);
-//       // Agar backend se response.data aa raha hai ya direct response aa raha hai check kar lein
-//       setOrder(response.data); 
-//     } catch (error) {
-//       console.log("Error fetching order in component", error);
-//     }
-//   };
-
-//   if (id) {
-//     fetchOrder();
-//   }
-// }, [id, handleGetOrderById]); 
-
-
-//   if (!order) {
-//     return (
-//       <div className="h-screen flex flex-col items-center justify-center space-y-4">
-//         <p className="font-black italic text-xl uppercase">Order not found!</p>
-//         <button onClick={() => navigate(-1)} className="underline font-bold">Go Back</button>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="max-w-4xl mx-auto p-6 space-y-8 animate-in fade-in duration-700">
-
-//       {/* Header */}
-//       <div className="flex justify-between items-end border-b pb-6">
-//         <div>
-//           <button
-//             onClick={() => navigate(-1)}
-//             className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 hover:text-orange-500 transition-colors"
-//           >
-//             ← Back to Orders
-//           </button>
-//           <h2 className="text-3xl font-black uppercase italic tracking-tighter">Order Details</h2>
-//           <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">
-//             ID: #{order._id} • Placed on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-//           </p>
-//         </div>
-//         <button className="border-2 border-black px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all">
-//           Download Invoice
-//         </button>
-//       </div>
-
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-//         {/* Left: Items List */}
-//         <div className="md:col-span-2 space-y-4">
-//           <h3 className="text-sm font-black uppercase tracking-widest text-gray-400">
-//             Items ({order.orderItems?.length || 0})
-//           </h3>
-
-//           <div className="bg-white border border-gray-100 rounded-[2rem] p-6 space-y-6 shadow-sm">
-//             {order.orderItems?.map((item, index) => (
-//               <div key={index} className={`flex items-center gap-6 ${index !== 0 ? 'border-t pt-6' : ''}`}>
-//                 {/* Product Image/Placeholder */}
-//                 <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl italic font-black overflow-hidden">
-//                   {item.thumbnail ? (
-//                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-//                   ) : (
-//                     item.name?.charAt(0) || "P"
-//                   )}
-//                 </div>
-
-//                 <div className="flex-1">
-//                   <h4 className="font-black uppercase text-sm">{item.title || item.name}</h4>
-//                   <p className="text-xs text-gray-400 font-bold uppercase mt-1">
-//                     Qty: {item.quantity || 1} • ₹{item.totalPrice}
-//                   </p>
-//                 </div>
-
-//                 <p className="font-black italic">₹{(item.totalPrice * (item.quantity || 1)).toFixed(2)}</p>
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-
-//         {/* Right: Summary & Address */}
-//         <div className="space-y-6">
-
-//           {/* Order Summary Card */}
-//           <div className="bg-black text-white rounded-[2rem] p-8 shadow-xl">
-//             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 opacity-60">Order Summary</h3>
-//             <div className="space-y-3 text-sm">
-//               <div className="flex justify-between opacity-80">
-//                 <span>Subtotal</span>
-//                 <span>₹{Number(order.totalPrice).toFixed(2)}</span>
-//               </div>
-//               <div className="flex justify-between opacity-80">
-//                 <span>Shipping</span>
-//                 <span className="text-green-400">FREE</span>
-//               </div>
-//               <div className="flex justify-between opacity-80">
-//                 <span>Tax (GST)</span>
-//                 <span>₹0.00</span>
-//               </div>
-
-//               <div className="border-t border-white/10 pt-4 mt-4 flex justify-between text-xl font-black italic">
-//                 <span>Total</span>
-//                 <span>₹{Number(order.totalPrice).toFixed(2)}</span>
-//               </div>
-//             </div>
-
-//             {/* Click to Track Link */}
-//             <button
-//               onClick={() => navigate(`/trackorder/${order._id}`, { state: { order } })}
-//               className="w-full mt-6 bg-white text-black py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all"
-//             >
-//               Track Journey →
-//             </button>
-//           </div>
-
-//           {/* Delivery Address Card */}
-//           <div className="bg-white border border-gray-100 rounded-[2rem] p-8">
-//             <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Delivery Address</h3>
-//             <p className="font-black text-sm uppercase leading-tight">{order.shippingAddress.fullName}</p>
-//             <p className="text-xs text-gray-500 font-medium mt-2 leading-relaxed">
-//               {/* Indira Nagar No 3, Nahur Road,<br />
-//               Mulund West, Mumbai - 400080 */}
-//               {`${order.shippingAddress.addressLine1, ",", order.shippingAddress.landmark, ",", order.shippingAddress.city, ",", order.shippingAddress.state, ",", order.shippingAddress.postalCode}`}
-//             </p>
-
-//             {/* Status Badge inside details */}
-//             <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between">
-//               <span className="text-[10px] font-bold text-gray-400 uppercase">Status</span>
-//               <span className="text-[10px] font-black uppercase italic bg-gray-100 px-3 py-1 rounded-lg">
-//                 {order.orderStatus}
-//               </span>
-//             </div>
-//           </div>
-
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default OrderDetails;
-
-
-// ===============================================
-
-// import React, { useEffect, useState } from 'react';
-// import { useLocation, useNavigate, useParams } from 'react-router-dom';
-// import { useOrder } from '../context/OrderContext';
-
-// const OrderDetails = () => {
-//   const { state } = useLocation();
-//   const navigate = useNavigate();
-//   const { handleGetOrderById } = useOrder();
-//   const { id } = useParams();
-
-//   // Pehle state se order lene ki koshish karein, agar na ho toh null rakhein taaki useEffect API call kare
-//   const [order, setOrder] = useState(state?.order || null);
-
-//   useEffect(() => {
-//     // Agar state mein order pehle se hai, toh baar-baar API call karne ki zaroorat nahi hai
-//     if (order) return;
-
-//     const fetchOrder = async () => {
-//       try {
-//         const response = await handleGetOrderById(id);
-//         setOrder(response.data || response);
-//       } catch (error) {
-//         console.log("Error fetching order in component", error);
-//       }
-//     };
-
-//     if (id) {
-//       fetchOrder();
-//     }
-//   }, [id, handleGetOrderById, order]);
-
-//   if (!order) {
-//     return (
-//       <div className="h-screen flex flex-col items-center justify-center space-y-4">
-//         <p className="font-black italic text-xl uppercase">Order not found!</p>
-//         <button onClick={() => navigate(-1)} className="underline font-bold">Go Back</button>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="max-w-4xl mx-auto p-6 space-y-8 animate-in fade-in duration-700">
-
-//       {/* Header */}
-//       <div className="flex justify-between items-end border-b pb-6">
-//         <div>
-//           <button
-//             onClick={() => navigate(-1)}
-//             className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 hover:text-orange-500 transition-colors"
-//           >
-//             ← Back to Orders
-//           </button>
-//           <h2 className="text-3xl font-black uppercase italic tracking-tighter">Order Details</h2>
-//           <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">
-//             ID: #{order._id} | Placed on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-//           </p>
-//         </div>
-//         <button className="border-2 border-black px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all">
-//           Download Invoice
-//         </button>
-//       </div>
-
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-//         {/* Left: Items List */}
-//         <div className="md:col-span-2 space-y-4">
-//           <h3 className="text-sm font-black uppercase tracking-widest text-gray-400">
-//             Items ({order.orderItems?.length || 0})
-//           </h3>
-
-//           <div className="bg-white border border-gray-100 rounded-[2rem] p-6 space-y-6 shadow-sm">
-//             {order.orderItems?.map((item, index) => (
-//               <div>
-//                 <div key={index} className={`flex items-center gap-6 ${index !== 0 ? 'border-t pt-6' : ''}`}>
-//                   {/* Product Image/Placeholder */}
-//                   <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl italic font-black overflow-hidden">
-//                     {item.image ? (
-//                       <img src={item.image} alt={item.title || item.name} className="w-full h-full object-cover" />
-//                     ) : (
-//                       (item.title || item.name)?.charAt(0) || "P"
-//                     )}
-//                   </div>
-
-//                   <div className="flex-1">
-//                     <h4 className="font-black uppercase text-sm">{item.title || item.name}</h4>
-//                     <p className="text-xs text-gray-400 font-bold uppercase mt-1">
-//                       Qty: {item.quantity || 1} | Price: ₹{item.price || item.totalPrice}
-//                     </p>
-//                   </div>
-
-//                   <p className="font-black italic">₹{((item.price || item.totalPrice) * (item.quantity || 1)).toFixed(2)}</p>
-//                 </div>
-//                 {/* Item ke neeche review button */}
-//                 <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-//                   <span className="text-[10px] font-bold text-gray-400 uppercase">
-//                     {order.orderStatus === "Delivered" ? "Delivered successfully" : "Delivery in progress"}
-//                   </span>
-
-//                   {order.orderStatus === "Delivered" && (
-//                     <button
-//                       onClick={() => {
-//                         // Yahan aap review modal open kar sakte hain ya review page par navigate kar sakte hain
-//                         console.log("Rate product:", item._id);
-//                       }}
-//                       className="bg-black text-white px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-orange-500 transition-colors"
-//                     >
-//                       ⭐ Rate & Review
-//                     </button>
-//                   )}
-//                 </div>
-//               </div>
-
-//             ))}
-//           </div>
-
-//         </div>
-
-//         {/* Right: Summary & Address */}
-//         <div className="space-y-6">
-
-//           {/* Order Summary Card */}
-//           <div className="bg-black text-white rounded-[2rem] p-8 shadow-xl">
-//             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 opacity-60">Order Summary</h3>
-//             <div className="space-y-3 text-sm">
-//               <div className="flex justify-between opacity-80">
-//                 <span>Subtotal</span>
-//                 <span>₹{Number(order.totalPrice).toFixed(2)}</span>
-//               </div>
-//               <div className="flex justify-between opacity-80">
-//                 <span>Shipping</span>
-//                 <span className="text-green-400">FREE</span>
-//               </div>
-//               <div className="flex justify-between opacity-80">
-//                 <span>Tax (GST)</span>
-//                 <span>₹0.00</span>
-//               </div>
-
-//               <div className="border-t border-white/10 pt-4 mt-4 flex justify-between text-xl font-black italic">
-//                 <span>Total</span>
-//                 <span>₹{Number(order.totalPrice).toFixed(2)}</span>
-//               </div>
-//             </div>
-
-//             {/* Click to Track Link */}
-//             <button
-//               onClick={() => navigate(`/trackorder/${order._id}`, { state: { order } })}
-//               className="w-full mt-6 bg-white text-black py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all"
-//             >
-//               Track Journey →
-//             </button>
-//           </div>
-
-//           {/* Delivery Address Card */}
-//           <div className="bg-white border border-gray-100 rounded-[2rem] p-8">
-//             <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Delivery Address</h3>
-//             <p className="font-black text-sm uppercase leading-tight">{order.shippingAddress?.fullName}</p>
-//             <p className="text-xs text-gray-500 font-medium mt-2 leading-relaxed">
-//               {order.shippingAddress ?
-//                 [
-//                   order.shippingAddress.addressLine1,
-//                   order.shippingAddress.landmark,
-//                   order.shippingAddress.city,
-//                   order.shippingAddress.state,
-//                   order.shippingAddress.postalCode
-//                 ].filter(Boolean).join(", ")
-//                 : "Address not available"}
-//             </p>
-
-//             {/* Status Badge inside details */}
-//             <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between">
-//               <span className="text-[10px] font-bold text-gray-400 uppercase">Status</span>
-//               <span className="text-[10px] font-black uppercase italic bg-gray-100 px-3 py-1 rounded-lg">
-//                 {order.orderStatus}
-//               </span>
-//             </div>
-//           </div>
-
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default OrderDetails;
-
-// =========================================================
-
-
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useOrder } from '../context/OrderContext';
 import { useReview } from "../context/ReviewContext";
 import { useAuth } from "../context/AuthContext";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 
 const OrderDetails = () => {
@@ -366,11 +21,100 @@ const OrderDetails = () => {
   const [selectedItemForReview, setSelectedItemForReview] = useState(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const [productId, setProductId] = useState(order?.orderItems?.[0]?.product || null); // Default to first product if available
+  //  const [productId, setProductId] = useState(order?.orderItems?.[0]?.product || null); // Default to first product if available
+  const [productIds, setProductId] = useState(order?.orderItems?.map((item) => item.product) || []); // Default to first product if available
   const { handleAddReviews, reviews, setReviews, handleGetSinglegProductReviews, handleUpdateReviews, handleDeleteReviews } = useReview();
-   const { user } = useAuth();
+  const { user } = useAuth();
 
-  console.log("Order in OrderDetails component:", productId);
+  const handleDownloadInvoice = () => {
+    if (!order) return;
+    const doc = new jsPDF();
+
+    // 1. Header / Title
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("INVOICE", 14, 20);
+
+    // 2. Order Metadata
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Order ID: #${order?._id || "N/A"}`, 14, 30);
+    doc.text(
+      `Date: ${order?.createdAt
+        ? new Date(order.createdAt).toLocaleDateString()
+        : new Date().toLocaleDateString()
+      }`,
+      14,
+      36
+    );
+    doc.text(`Status: ${order?.orderStatus || "Pending"}`, 14, 42);
+
+    // 3. Customer & Shipping Info (if available)
+    if (order?.shippingAddress) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Shipping Details:", 14, 52);
+      doc.setFont("helvetica", "normal");
+
+      // Full Name
+      doc.text(`${order.shippingAddress.fullName || order.shippingAddress.name || ""}`, 14, 58);
+
+      // 👇 Street Address Fallback Logic (Saare common keys check karega)
+      const streetAddress =
+        order.shippingAddress.address ||
+        order.shippingAddress.street ||
+        order.shippingAddress.streetAddress ||
+        order.shippingAddress.addressLine1 ||
+        "";
+
+      doc.text(`${streetAddress}`, 14, 64);
+
+      // City & Postal Code/Pincode
+      doc.text(
+        `${order.shippingAddress.city || ""}, ${order.shippingAddress.postalCode || order.shippingAddress.pincode || ""}`,
+        14,
+        70
+      );
+    }
+
+    // 4. Products Table Format Data
+    const tableColumn = ["Product Name", "Quantity", "Unit Price", "Total"];
+    const tableRows = [];
+
+    const items = order?.items || order?.orderItems || [];
+    items.forEach((item) => {
+      const productName = item.product?.name || item.name || "Product";
+      const quantity = item.quantity || 1;
+      const price = item.product?.price || item.price || 0;
+      const total = quantity * price;
+
+      tableRows.push([
+        productName,
+        quantity,
+        `₹${price.toFixed(2)}`,
+        `₹${total.toFixed(2)}`,
+      ]);
+    });
+
+    // 5. Generate Table using autoTable
+    autoTable(doc, {
+      startY: order?.shippingAddress ? 78 : 50,
+      head: [tableColumn],
+      body: tableRows,
+      theme: "grid",
+      headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255] },
+    });
+
+    // 6. Summary / Total Calculation
+    const finalY = doc.lastAutoTable.finalY + 10;
+    const grandTotal = order?.totalPrice || order?.grandTotal || 0;
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Grand Total: ₹${grandTotal.toFixed(2)}`, 14, finalY);
+
+    // 7. Download PDF File
+    doc.save(`Invoice_${order?._id || "order"}.pdf`);
+  };
 
   useEffect(() => {
     if (order) return;
@@ -390,11 +134,22 @@ const OrderDetails = () => {
   }, [id, handleGetOrderById, order]);
 
 
+  // useEffect(() => {
+  //   if (productId) {
+  //     handleGetSinglegProductReviews(productId);
+  //   }
+  // }, [productId]);
   useEffect(() => {
-    if (productId) {
-      handleGetSinglegProductReviews(productId);
-    }
-  }, [productId]);
+  if (productIds.length > 0) {
+   if(Array.isArray(productIds)){
+     productIds.forEach((item) => {
+        handleGetSinglegProductReviews(item);
+      });
+   } else{
+            handleGetSinglegProductReviews(productIds);
+   }
+  }
+}, [productIds, handleGetSinglegProductReviews]);
 
   const EditReview = (reviewData) => {
     setSelectedReview(reviewData);
@@ -455,7 +210,10 @@ const OrderDetails = () => {
             ID: #{order._id} | Placed on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         </div>
-        <button className="border-2 border-black px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all">
+        <button
+          onClick={handleDownloadInvoice}
+          className="border border-black px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
+        >
           Download Invoice
         </button>
       </div>
@@ -474,12 +232,16 @@ const OrderDetails = () => {
               {/* Maan lijiye aapke paas review data hai jo is item se match karta hai */ }
               {/* Aap ise apne state ya API data ke mutabiq replace kar sakte hain */ }
               // Yahan current user ki ID bhi check karein taaki sirf aapka hi review dikhe
+              debugger
               const existingReview = reviews?.find(
-                (rev) =>
-                  (rev.product === item.product || rev.product?._id === item.product) &&
-                  (rev.user?._id === user._id || rev.user === user._id)
-              );
+                (rev) =>{
 
+debugger
+                return  (rev.product === item.product || rev.product?._id === item.product) &&
+                  (rev.user?._id === user.id || rev.user === user.id)
+                }
+              );
+debugger
               return (
                 <div key={index} className={`flex flex-col gap-4 ${index !== 0 ? 'border-t pt-6' : ''}`}>
                   <div className="flex items-center gap-6">
@@ -669,7 +431,7 @@ const OrderDetails = () => {
             {/* Submit Button (UI Only) */}
             <button
               onClick={() => {
-                cutomerReviews(productId)
+                cutomerReviews(productIds)
                 // alert("Review submitted successfully! (UI Only)");
                 // setIsReviewOpen(false);
                 // setComment("");

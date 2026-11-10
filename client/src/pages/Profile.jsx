@@ -11,7 +11,7 @@ const Profile = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const navigate = useNavigate();
   const { handleGetMyOrders, orders } = useOrder();
-  console.log("addresses from prfile page", addresses)
+  console.log("orders from profile page", orders)
 
   const [userData, setUserData] = useState({
     fullName: user?.name || "",
@@ -405,7 +405,7 @@ const MyOrdersUI = ({ userproduct, navigate }) => {
                   <button
                     className="bg-black text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all"
                     onClick={() =>
-                      navigate("/trackorder", {
+                      navigate(`/trackorder/${orders[0]._id}`, {
                         // state: { order: orders[orders.length - 1] },
                         state: { order: orders[0] },
 
