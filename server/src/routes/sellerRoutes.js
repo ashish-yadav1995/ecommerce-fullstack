@@ -12,6 +12,8 @@ const {
   getSellerRecentOrders,
   getMyProducts,
   getMyProductById,
+  getAllSellerOrders,
+  updateOrderStatus
 } = require("../controllers/sellerController");
 
 // =====================================================
@@ -43,6 +45,18 @@ router.get("/products", protect, authorize("seller"), getMyProducts);
 // =====================================================
 
 router.get("/products/:id", protect, authorize("seller"), getMyProductById);
+
+// =====================================================
+// Get SELLER ALL ORDERS
+// =====================================================
+
+router.get("/all-orders", protect, authorize("seller"), getAllSellerOrders);
+
+// =====================================================
+// UPDATE SELLER ORDER STATUS
+// =====================================================
+
+router.put("/orders/:id/status", protect, authorize("seller"), updateOrderStatus);
 
 module.exports = router;
      

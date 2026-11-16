@@ -1,4 +1,5 @@
 import { createContext, useContext, useCallback, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 const OrderContext = createContext();
 export const useOrder = () => useContext(OrderContext);
 import {
@@ -10,14 +11,13 @@ import {
 
 function OrderProvider({ children }) {
   const [orders, setOrders] = useState(null);
+  const { user } = useAuth();
 
   const placeOrder = async (addressId, paymentMethod) => {
     try {
       const response = await createOrder({ addressId, paymentMethod });
       if (response.success) {
-        // Context ke andar hi state update kar do
-        // setOrders((prevOrders) => [...prevOrders, response.order]);
-        setOrders((prevOrders) => [response.order, ...prevOrders]);  // New order ko list ke start me add karne ke liye
+        setOrders((prevOrders) => [response.order, ...prevOrders]);  
       }
       return response.order;
     } catch (error) {
@@ -30,16 +30,24 @@ function OrderProvider({ children }) {
     async () => {
       try {
         const myorders = await getMyOrders();
-        console.log("orders from orders context", myorders);
-        setOrders(myorders.data);
+        setOrders(myorders.data || []);
       } catch (error) {
         console.log("your orders unable to fetched successfully", error);
+        setOrders([]);
       }
-    }, []);// <-- Dependency array empty rahega
+    }, []
+  );
 
   useEffect(() => {
-    handleGetMyOrders();
-  }, [handleGetMyOrders]); // <-- Yahan 'orders' nahi hona chahiye!
+    //  Agar user logged-in hai, tabhi orders fetch karo
+    if (user) {
+      handleGetMyOrders();
+    } else {
+      setOrders([]); // Logout hone par orders ko khali kar do
+    }
+  }, [handleGetMyOrders, user]); //  Yaha user ko dependency aayega jab user change hoga, tabhi orders fetch honge
+
+  console.log("orders from context", orders)
 
   const handleGetOrderById = useCallback(async (orderId) => {
     // Yahan try-catch ki zaroorat nahi hai agar error ko component me handle kar rahe hain

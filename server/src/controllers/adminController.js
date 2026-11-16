@@ -1,6 +1,10 @@
 const User = require("../models/User");
 const asyncHandler = require("../middlewares/asyncHandler");
 const ApiError = require("../utils/ApiError");
+const Product = require("../models/Product");
+const Order = require("../models/Order");
+const Review = require("../models/Review");
+const Category = require("../models/Category");
 
 // =====================================================
 // ADMIN DASHBOARD STATS
@@ -10,89 +14,59 @@ exports.getDashboardStats = asyncHandler(async (req, res) => {
   // =========================
   // USERS
   // =========================
-
   const totalUsers = await User.countDocuments();
-
-  const activeUsers = await User.countDocuments({
-    isActive: true,
-  });
-
-  const inactiveUsers = await User.countDocuments({
-    isActive: false,
-  });
-
-  const customers = await User.countDocuments({
-    role: "customer",
-  });
-
-  const sellers = await User.countDocuments({
-    role: "seller",
-  });
-
-  const admins = await User.countDocuments({
-    role: "admin",
-  });
+  const activeUsers = await User.countDocuments({ isActive: true });
+  const inactiveUsers = await User.countDocuments({ isActive: false });
+  const customers = await User.countDocuments({ role: "customer" });
+  const sellers = await User.countDocuments({ role: "seller" });
+  const admins = await User.countDocuments({ role: "admin" });
 
   // =========================
   // PRODUCTS
   // =========================
-
   const totalProducts = await Product.countDocuments();
-
-  const activeProducts = await Product.countDocuments({
-    isActive: true,
-  });
-
-  const inactiveProducts = await Product.countDocuments({
-    isActive: false,
-  });
+  const activeProducts = await Product.countDocuments({ isActive: true });
+  const inactiveProducts = await Product.countDocuments({ isActive: false });
 
   // =========================
   // CATEGORIES
   // =========================
-
   const totalCategories = await Category.countDocuments();
 
   // =========================
-  // ORDERS
+  // ORDERS & REVENUE
   // =========================
-
   const totalOrders = await Order.countDocuments();
+  const pendingOrders = await Order.countDocuments({ orderStatus: "Pending" });
+  const processingOrders = await Order.countDocuments({ orderStatus: "Processing" });
+  const shippedOrders = await Order.countDocuments({ orderStatus: "Shipped" });
+  const deliveredOrders = await Order.countDocuments({ orderStatus: "Delivered" });
+  const cancelledOrders = await Order.countDocuments({ orderStatus: "Cancelled" });
 
-  const pendingOrders = await Order.countDocuments({
-    orderStatus: "Pending",
-  });
-
-  const processingOrders = await Order.countDocuments({
-    orderStatus: "Processing",
-  });
-
-  const shippedOrders = await Order.countDocuments({
-    orderStatus: "Shipped",
-  });
-
-  const deliveredOrders = await Order.countDocuments({
-    orderStatus: "Delivered",
-  });
-
-  const cancelledOrders = await Order.countDocuments({
-    orderStatus: "Cancelled",
-  });
+  // Revenue calculation (Delivered orders ka total amount)
+  const revenueResult = await Order.aggregate([
+    { $match: { orderStatus: "Delivered" } },
+    { $group: { _id: null, total: { $sum: "$totalPrice" } } }
+  ]);
+  const totalRevenue = revenueResult[0]?.total || 0;
 
   // =========================
   // REVIEWS
   // =========================
-
   const totalReviews = await Review.countDocuments();
 
   // =========================
   // RESPONSE
   // =========================
-
   res.status(200).json({
     success: true,
-
     data: {
+      stats: {
+        totalUsers,
+        totalProducts,
+        totalOrders,
+        totalRevenue,
+      },
       users: {
         total: totalUsers,
         active: activeUsers,
@@ -101,17 +75,14 @@ exports.getDashboardStats = asyncHandler(async (req, res) => {
         sellers,
         admins,
       },
-
       products: {
         total: totalProducts,
         active: activeProducts,
         inactive: inactiveProducts,
       },
-
       categories: {
         total: totalCategories,
       },
-
       orders: {
         total: totalOrders,
         pending: pendingOrders,
@@ -120,7 +91,6 @@ exports.getDashboardStats = asyncHandler(async (req, res) => {
         delivered: deliveredOrders,
         cancelled: cancelledOrders,
       },
-
       reviews: {
         total: totalReviews,
       },
@@ -159,7 +129,8 @@ exports.deactivateUser = asyncHandler(async (req, res) => {
 
 // Activate user - Admin only
 exports.activateUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  //  Fix: req.user._id ki jagah req.params.id use karein
+  const user = await User.findById(req.params.id);
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -175,7 +146,6 @@ exports.activateUser = asyncHandler(async (req, res) => {
     message: "User activated successfully",
   });
 });
-
 // =====================================================
 // GET USER BY ID
 // =====================================================
@@ -212,24 +182,24 @@ exports.getAllProducts = asyncHandler(async (req, res) => {
   });
 });
 
-// =====================================================
-// GET ALL PRODUCTS - ADMIN
-// =====================================================
+// // =====================================================
+// // GET ALL PRODUCTS - ADMIN
+// // =====================================================
 
-exports.getAllProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find()
-    .populate("seller", "name email")
-    .populate("category", "name slug")
-    .sort({
-      createdAt: -1,
-    });
+// exports.getAllProducts = asyncHandler(async (req, res) => {
+//   const products = await Product.find()
+//     .populate("seller", "name email")
+//     .populate("category", "name slug")
+//     .sort({
+//       createdAt: -1,
+//     });
 
-  res.status(200).json({
-    success: true,
-    count: products.length,
-    data: products,
-  });
-});
+//   res.status(200).json({
+//     success: true,
+//     count: products.length,
+//     data: products,
+//   });
+// });
 
 // =====================================================
 // DEACTIVATE PRODUCT
@@ -292,6 +262,24 @@ exports.getAllReviews = asyncHandler(async (req, res) => {
   });
 });
 
+exports.deleteReview = asyncHandler(async (req, res) => {
+  const review = await Review.findById(req.params.id);
+
+  if (!review) {
+    return res.status(404).json({
+      success: false,
+      message: "Review not found",
+    });
+  }
+
+  await review.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "Review deleted successfully",
+  });
+});
+
 
 // =====================================================
 // RECENT ORDERS
@@ -317,3 +305,19 @@ exports.getRecentOrders = asyncHandler(
     });
   }
 );
+
+// adminController.js
+exports.getOrderById = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id)
+    .populate("user", "name email")
+    .populate("orderItems.product"); // ya jo bhi product reference ho
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    order,
+  });
+});

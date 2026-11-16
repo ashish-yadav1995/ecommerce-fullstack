@@ -268,3 +268,57 @@ exports.getMyProductById = asyncHandler(async (req, res) => {
     data: product,
   });
 });
+
+// SELLER ALL ORDERS (Without limit)
+exports.getAllSellerOrders = asyncHandler(async (req, res) => {
+  console.log("running  controller-----------1", req.user._id);
+  // 1. Pehle seller ke saare products ki IDs nikal lein
+  const products = await Product.find({ seller: req.user._id }).select("_id");
+  const productIds = products.map((p) => p._id);
+
+  console.log("running  controller-----------2", productIds);
+
+  // 2. Phir un orders ko dhoondhe jisme inme se koi product ho
+  const orders = await Order.find({ "orderItems.product": { $in: productIds } })
+    .populate("user", "name email")
+    .sort({ createdAt: -1 }); // Naye orders upar dikhein
+  console.log("running  controller-----------3", orders);
+  res.status(200).json({
+    success: true,
+    count: orders.length,
+    orders,
+  });
+
+})
+
+// UPDATE ORDER STATUS
+exports.updateOrderStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { orderStatus } = req.body;
+  const sellerId = req.user._id;
+
+  const order = await Order.findById(id);
+  if (!order) {
+    return res.status(404).json({ success: false, message: "Order not found" });
+  }
+
+  // 🔴 RULE 1: Agar order pehle se Delivered ya Cancelled hai, toh change na ho
+  if (order.orderStatus === "Delivered" || order.orderStatus === "Cancelled") {
+    return res.status(400).json({
+      success: false,
+      message: `Cannot change status. Order is already ${order.orderStatus}.`,
+    });
+  }
+
+  // 🔴 RULE Optional: Agar aap strict forward flow chahte hain (jaise Delivered se Pending na ho)
+  // Aap chahein toh ye check bhi laga sakte hain. Filhal Delivered/Cancelled lock karne se issue solve ho jayega.
+
+  order.orderStatus = orderStatus;
+  await order.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Order status updated successfully",
+    order,
+  });
+});

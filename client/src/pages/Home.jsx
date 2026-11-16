@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getAllProducts } from "../services/productApi";
 import ProductCard from "../components/ProductCard";
 import Loader from "../components/Loader";
@@ -20,6 +20,17 @@ function Home() {
     fetchProducts();
   }, []);
 
+  const fetchProducts = async () => {
+    try {
+      const data = await getAllProducts();
+      console.log("data from api", data);
+      setProducts(data.products || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // debounce search
   useEffect(() => {
@@ -33,25 +44,20 @@ function Home() {
     return () => clearTimeout(timer);
   }, [search, products]);
 
-  const fetchProducts = async () => {
-    try {
-      const data = await getAllProducts();
-      console.log("data from api", data);
-      setProducts(data.products);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 🛠️ FIX: Unique Categories nikalne ke liye _id se filter karein
+  const categories = products
+    .map((p) => p.category)
+    .filter(
+      (cat, index, self) =>
+        cat && typeof cat === "object" && self.findIndex((c) => c?._id === cat?._id) === index
+    );
 
-  // categories
-  const categories = [...new Set(products.map((p) => p.category))];
-
-  // filter logic
-  const finalProducts = (search ? filtered : products).filter((p) =>
-    selectedCategory === "all" ? true : p.category === selectedCategory,
-  );
+  // 🛠️ FIX: Filter logic (Object ID vs String ID comparison handle kiya hai)
+  const finalProducts = (search ? filtered : products).filter((p) => {
+    if (selectedCategory === "all") return true;
+    const catId = typeof p.category === "object" ? p.category?._id : p.category;
+    return catId === selectedCategory;
+  });
 
   console.log("final", finalProducts);
 
@@ -82,6 +88,7 @@ function Home() {
 
         <select
           className="border p-2 rounded"
+          value={selectedCategory}
           onChange={(e) => {
             setSelectedCategory(e.target.value);
             setPage(1);
@@ -116,7 +123,7 @@ function Home() {
 
           <span className="font-semibold">Page {page}</span>
 
-          <button
+            <button
             className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
             onClick={() => setPage(page + 1)}
             disabled={start + perPage >= finalProducts.length}

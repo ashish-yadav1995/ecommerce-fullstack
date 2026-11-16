@@ -31,11 +31,12 @@ function AuthProvider({ children }) {
   // Logout
   const logout = async () => {
     try {
-      await api.post("/auth/logout"); // Cookie clear karne ke liye
+      await logoutUser(); // Cookie clear karne ke liye
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
       setUser(null);
+      // navigate("/");
     }
   };
 

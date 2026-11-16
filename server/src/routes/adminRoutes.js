@@ -51,6 +51,8 @@ const {
   activateProduct,
   getRecentOrders,
   getAllReviews,
+  getOrderById,
+  deleteReview,
 } = require("../controllers/adminController");
 
 // =====================================================
@@ -107,5 +109,10 @@ router.get("/orders/recent", protect, authorize("admin"), getRecentOrders);
 // =====================================================
 
 router.get("/reviews", protect, authorize("admin"), getAllReviews);
+
+router.get("/orders/:id", protect, authorize("admin"), getOrderById);
+
+router.delete("/reviews/:id", protect, authorize("admin"), deleteReview);
+
 
 module.exports = router;

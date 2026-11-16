@@ -47,6 +47,13 @@ function MyProducts() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
+
+        <button
+          onClick={() => navigate("/seller")}
+          className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200"
+        >
+          ← Back to Dashboard
+        </button>
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -124,7 +131,7 @@ function MyProducts() {
                   <div>
                     <button
                       onClick={() =>
-                        navigate(`/productdetail?id=${product._id}`)
+                        navigate(`/seller/products/${product._id}`)
                       }
                       className="w-full border border-gray-300 py-2 rounded-lg font-semibold hover:bg-gray-50 transition"
                     >

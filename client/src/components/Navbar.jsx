@@ -11,7 +11,7 @@ function Navbar() {
   // Safely calculate cart count (function ho ya variable/array)
   const cartCount = typeof getTotalItems === "function" ? getTotalItems() : (getTotalItems || 0);
   // const wishlistCount = wishlistItems?.length || 0;
-  const wishlistCount =  0;
+  const wishlistCount = 0;
 
   return (
     <nav className="sticky top-0 z-50 bg-black text-white px-6 py-4 flex justify-between items-center shadow-lg">
@@ -30,7 +30,7 @@ function Navbar() {
         </Link>
 
         {/* Wishlist Link with Heart Icon & Red Badge */}
-        {user && (
+        {user?.role !== "admin" && (
           <Link
             className="hover:text-red-400 transition-colors flex items-center gap-1.5 relative font-medium text-sm"
             to="/wishlist"
@@ -59,29 +59,32 @@ function Navbar() {
         )}
 
         {/* Cart Link with Shopping Bag Icon & Blue Badge */}
-        <Link
-          className="hover:text-blue-400 transition-colors flex items-center gap-1.5 relative font-medium text-sm"
-          to="/cart"
-          title="Shopping Cart"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+
+
+        {user?.role !== "admin" && (
+          <Link
+            className="hover:text-blue-400 transition-colors flex items-center gap-1.5 relative font-medium text-sm"
+            to="/cart"
+            title="Shopping Cart"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            />
-          </svg>
-          <span>Cart</span>
-          <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-            {cartCount}
-          </span>
-        </Link>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              />
+            </svg>
+            <span>Cart</span>
+            <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+              {cartCount}
+            </span>
+          </Link>)}
 
         {/* Dynamic Auth Section */}
         {!user ? (

@@ -105,7 +105,7 @@ useEffect(() => {
                 </span>
               </div>
 
-              <nav className="mt-12 space-y-2">
+           <nav className="mt-12 space-y-2">
                 <SidebarBtn
                   icon="👤"
                   label="Profile Info"
@@ -124,6 +124,25 @@ useEffect(() => {
                   onClick={() => setActiveTab("orders")}
                   active={activeTab === "orders"}
                 />
+
+                {/* 👇 SELLER DASHBOARD BUTTON (Agar user seller hai) */}
+                {userData.role === "seller" && (
+                  <SidebarBtn
+                    icon="📊"
+                    label="Seller Dashboard"
+                    onClick={() => navigate("/seller")}
+                  />
+                )}
+
+                {/* 👇 ADMIN DASHBOARD BUTTON (Agar user admin hai) */}
+                {userData.role === "admin" && (
+                  <SidebarBtn
+                    icon="⚡"
+                    label="Admin Dashboard"
+                    onClick={() => navigate("/admin")}
+                  />
+                )}
+
                 <div className="pt-6 mt-6 border-t border-gray-100">
                   <SidebarBtn
                     icon="🚪"

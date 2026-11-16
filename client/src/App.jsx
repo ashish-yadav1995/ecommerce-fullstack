@@ -24,6 +24,12 @@ import AdminHome from "./pages/Dashboard/AdminHome";
 import SellerHome from "./pages/Dashboard/SellerHome"; // Adjust file path as per your folder structure
 import AddProductDashboard from "./pages/Dashboard/AddProductDashboard"; // Adjust file path as per your folder structure
 import MyProductsDashboard from "./pages/Dashboard/MyProductsDashboard"; // Adjust file path as per your folder structure
+import SellerOrders from "./pages/Dashboard/SellerOrders";
+import SellerProductDetail from "./pages/Dashboard/SellerProductDetail";
+import AdminUsers from "./pages/Dashboard/AdminUsers"; // Adjust file path as per your folder structure
+import AdminProducts from "./pages/Dashboard/AdminProducts";
+import AdminOrderDetail from "./pages/Dashboard/AdminOrderDetail";
+import AdminReviews from "./pages/Dashboard/AdminReviews";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -133,6 +139,43 @@ function App() {
           }
         />
 
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminUsers />
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path="/admin/orders/:id"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProducts />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/reviews"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminReviews />
+            </ProtectedRoute>
+          }
+        />
+
         {/* ================= SELLER ROUTES ================= */}
         <Route
           path="/seller"
@@ -164,6 +207,23 @@ function App() {
           element={
             <ProtectedRoute role="seller">
               <EditProduct />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/seller/orders"
+          element={
+            <ProtectedRoute role="seller">
+              <SellerOrders />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/seller/products/:id"
+          element={
+            <ProtectedRoute role="seller">
+              <SellerProductDetail />
             </ProtectedRoute>
           }
         />

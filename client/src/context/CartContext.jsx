@@ -16,6 +16,8 @@ import {
   clearCart,
 } from "../services/cartApi";
 
+import { useAuth } from "./AuthContext"; 
+
 function CartProvider({ children }) {
 
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ function CartProvider({ children }) {
   const [grandTotal, setGrandTotal] = useState(0);
   const [actionLoading, setActionLoading] = useState(false);
   const [getTotalItems, setGetTotalItems] = useState(0);
-
+  const { user } = useAuth(); 
 
   const handleAddToCart = async (product) => {
     try {
@@ -166,10 +168,19 @@ function CartProvider({ children }) {
     }
   };
 
+useEffect(() => {
+  if (user) {
+    fetchCart();
+  } else {
+    setGetTotalItems(0);
+    // setCart([]);
+  }
+}, [user]); //  Sirf jab user change hoga, tabhi fetchCart chalega
   return (
     <CartContext.Provider
       value={{
         cart,
+        setCart,
         handleAddToCart,
         fetchCart,
         loading,
