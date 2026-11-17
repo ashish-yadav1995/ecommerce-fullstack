@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { resetPassword } from "../services/authApi";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -14,9 +14,9 @@ const ResetPassword = () => {
 
   const [formData, setFormdata] = useState(initialValue);
   const [error, setError] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    console.log(e);
     const { name, value } = e.target;
     setFormdata({
       ...formData,
@@ -51,7 +51,6 @@ const ResetPassword = () => {
     e.preventDefault();
 
     const validateForm = validation();
-
     setError(validateForm);
 
     if (Object.keys(validateForm).length > 0) {
@@ -59,117 +58,110 @@ const ResetPassword = () => {
     }
 
     try {
+      setLoading(true);
       const { otp, newPassword } = formData;
       const response = await resetPassword(email, otp, newPassword);
       console.log("response", response);
+      alert("Password reset successfully! Please login.");
       navigate("/login");
     } catch (error) {
-      const message = error.response.data.message;
+      const message = error.response?.data?.message || "Failed to reset password";
       alert(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 w-full overflow-x-hidden font-sans">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+
         {/* Header */}
-        <div className="bg-blue-600 text-white text-center py-6">
-          <h2 className="text-2xl font-bold">Reset Password</h2>
-          <p className="text-sm mt-1">Enter the OTP and your new password</p>
+        <div className="bg-blue-600 text-white text-center py-6 px-4">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight">Reset Password</h2>
+          <p className="text-xs sm:text-sm mt-1 opacity-90 font-medium">Enter the OTP and your new password</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-4">
+
           {/* OTP */}
-          <label className="block text-sm font-semibold text-gray-600 mb-2">
-            OTP
-          </label>
-
-          <input
-            type="text"
-            name="otp"
-            maxLength="6"
-            placeholder="Enter 6 digit OTP"
-            value={formData.otp}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          {/* {error.otp && (
-              <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">
-                {error.otp}
+          <div>
+            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1">
+              OTP
+            </label>
+            <input
+              type="text"
+              name="otp"
+              maxLength="6"
+              placeholder="Enter 6 digit OTP"
+              value={formData.otp}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-black text-xs sm:text-sm bg-gray-50 transition-all font-mono"
+            />
+            {error.otp && (
+              <p className="flex items-center gap-1.5 mt-1.5 text-xs font-bold text-red-500 pl-1 border-l-2 border-red-500">
+                <span>{error.otp}</span>
               </p>
-            )} */}
-          {error.otp && (
-            <p className="flex items-center gap-1.5 mt-2 text-xs font-bold text-red-500 pl-1 border-l-2 border-red-500">
-              <span>{error.otp}</span>
-            </p>
-          )}
+            )}
+          </div>
 
           {/* New Password */}
-          <label className="block text-sm font-semibold text-gray-600 mt-5 mb-2">
-            NEW PASSWORD
-          </label>
-
-          <input
-            type="password"
-            name="newPassword"
-            placeholder="Enter new password"
-            value={formData.newPassword}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          {/* {error.newPassword && (
-            <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">
-              {error.newPassword}
-            </p>
-          )} */}
-
-          {error.newPassword && (
-            <p className="flex items-center gap-1.5 mt-2 text-xs font-bold text-red-500 pl-1 border-l-2 border-red-500">
-              <span>{error.newPassword}</span>
-            </p>
-          )}
+          <div>
+            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1">
+              New Password
+            </label>
+            <input
+              type="password"
+              name="newPassword"
+              placeholder="••••••••"
+              value={formData.newPassword}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-black text-xs sm:text-sm bg-gray-50 transition-all"
+            />
+            {error.newPassword && (
+              <p className="flex items-center gap-1.5 mt-1.5 text-xs font-bold text-red-500 pl-1 border-l-2 border-red-500">
+                <span>{error.newPassword}</span>
+              </p>
+            )}
+          </div>
 
           {/* Confirm Password */}
-          <label className="block text-sm font-semibold text-gray-600 mt-5 mb-2">
-            CONFIRM PASSWORD
-          </label>
+          <div>
+            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              name="confirmNewPassword"
+              placeholder="••••••••"
+              value={formData.confirmNewPassword}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-black text-xs sm:text-sm bg-gray-50 transition-all"
+            />
+            {error.confirmNewPassword && (
+              <p className="flex items-center gap-1.5 mt-1.5 text-xs font-bold text-red-500 pl-1 border-l-2 border-red-500">
+                <span>{error.confirmNewPassword}</span>
+              </p>
+            )}
+          </div>
 
-          <input
-            type="password"
-            name="confirmNewPassword"
-            placeholder="Confirm new password"
-            value={formData.confirmNewPassword}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          {/* {error.confirmNewPassword && (
-            <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">
-              {error.confirmNewPassword}
-            </p>
-          )} */}
-
-          {error.confirmNewPassword && (
-            <p className="flex items-center gap-1.5 mt-2 text-xs font-bold text-red-500 pl-1 border-l-2 border-red-500">
-              <span>{error.confirmNewPassword}</span>
-            </p>
-          )}
-
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
+            disabled={loading}
+            className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm py-3.5 rounded-xl transition-all active:scale-95 shadow-md disabled:opacity-50"
           >
-            Reset Password
+            {loading ? "Resetting..." : "Reset Password"}
           </button>
 
-          <div className="text-center mt-5">
-            <a href="/login" className="text-blue-600 hover:underline text-sm">
+          {/* Back to Login */}
+          <div className="text-center pt-2">
+            <Link to="/login" className="text-xs sm:text-sm text-blue-600 font-bold hover:underline">
               Back to Login
-            </a>
+            </Link>
           </div>
+
         </form>
       </div>
     </div>

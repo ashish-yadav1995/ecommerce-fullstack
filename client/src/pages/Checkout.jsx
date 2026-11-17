@@ -70,12 +70,14 @@ const Checkout = () => {
     try {
       setLoading(true);
       let addressId = selectedAddressId;
-      debugger
 
       // Agar koi address selected nahi hai, matlab naya address save karna padega
       if (!addressId) {
         const addressResponse = await handleAddNewAddress(data);
-        addressId = addressResponse?._id || addressResponse?.address?._id || addressResponse?.data?._id;
+        addressId =
+          addressResponse?._id ||
+          addressResponse?.address?._id ||
+          addressResponse?.data?._id;
       }
 
       if (!addressId) {
@@ -106,18 +108,18 @@ const Checkout = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* PAGE TITLE */}
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-10 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 sm:mb-10 tracking-tight">
           Checkout
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10">
           {/* ================= LEFT ================= */}
           <div className="lg:col-span-7">
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 italic border-l-4 border-black pl-3">
+            <div className="bg-white p-5 sm:p-8 rounded-3xl shadow-sm border border-gray-100">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-6 italic border-l-4 border-black pl-3">
                 Shipping Address
               </h2>
 
@@ -145,8 +147,8 @@ const Checkout = () => {
                           key={addr._id}
                           onClick={() => handleSelectAddress(addr)}
                           className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${isSelected
-                            ? "border-black bg-gray-50 shadow-sm"
-                            : "border-gray-100 bg-white hover:border-gray-200"
+                              ? "border-black bg-gray-50 shadow-sm"
+                              : "border-gray-100 bg-white hover:border-gray-200"
                             }`}
                         >
                           <div className="flex justify-between items-center mb-1">
@@ -181,7 +183,7 @@ const Checkout = () => {
                   <input
                     type="text"
                     placeholder="John Doe"
-                    className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                    className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                     {...register("fullName", {
                       required: "Full name is required",
                       pattern: {
@@ -208,7 +210,7 @@ const Checkout = () => {
                     type="text"
                     placeholder="9876543210"
                     maxLength="10"
-                    className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                    className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                     {...register("mobile", {
                       required: "Mobile number is required",
                       pattern: {
@@ -234,7 +236,7 @@ const Checkout = () => {
                   <input
                     type="text"
                     placeholder="House No, Building, Street"
-                    className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                    className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                     {...register("addressLine1", {
                       required: "Address is required",
                       minLength: {
@@ -260,7 +262,7 @@ const Checkout = () => {
                   <input
                     type="text"
                     placeholder="Apartment, Floor, Area (Optional)"
-                    className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                    className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                     {...register("addressLine2")}
                   />
                 </div>
@@ -274,7 +276,7 @@ const Checkout = () => {
                   <input
                     type="text"
                     placeholder="Near Railway Station (Optional)"
-                    className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                    className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                     {...register("landmark")}
                   />
                 </div>
@@ -289,7 +291,7 @@ const Checkout = () => {
                     <input
                       type="text"
                       placeholder="Mumbai"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                      className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                       {...register("city", {
                         required: "City is required",
                       })}
@@ -310,7 +312,7 @@ const Checkout = () => {
                     <input
                       type="text"
                       placeholder="Maharashtra"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                      className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                       {...register("state", {
                         required: "State is required",
                       })}
@@ -334,7 +336,7 @@ const Checkout = () => {
                     <input
                       type="text"
                       defaultValue="India"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                      className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                       {...register("country", {
                         required: "Country is required",
                       })}
@@ -356,7 +358,7 @@ const Checkout = () => {
                       type="text"
                       placeholder="400001"
                       maxLength="6"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                      className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                       {...register("postalCode", {
                         required: "Postal code is required",
                         pattern: {
@@ -381,7 +383,7 @@ const Checkout = () => {
                   </label>
 
                   <select
-                    className="w-full p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all"
+                    className="w-full p-3 sm:p-4 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-black outline-none transition-all text-sm"
                     {...register("addressType")}
                   >
                     <option value="Home">Home</option>
@@ -407,7 +409,7 @@ const Checkout = () => {
                 <div className="pt-6">
                   <button
                     type="submit"
-                    className="w-full bg-black text-white py-5 rounded-2xl font-black text-lg hover:bg-gray-900 transition-all active:scale-95 shadow-xl shadow-gray-200"
+                    className="w-full bg-black text-white py-4 sm:py-5 rounded-2xl font-black text-base sm:text-lg hover:bg-gray-900 transition-all active:scale-95 shadow-xl shadow-gray-200"
                   >
                     Confirm Order
                   </button>
@@ -418,8 +420,8 @@ const Checkout = () => {
 
           {/* ================= RIGHT ================= */}
           <div className="lg:col-span-5">
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 sticky top-10">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">
+            <div className="bg-white p-5 sm:p-8 rounded-3xl shadow-sm border border-gray-100 lg:sticky lg:top-20">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-6">
                 Order Summary
               </h2>
 
@@ -433,7 +435,7 @@ const Checkout = () => {
                       key={item._id || product._id || index}
                       className="flex justify-between items-center gap-4"
                     >
-                      <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
                         <img
                           src={product.images?.[0]}
                           alt={product.name || "Product"}
@@ -441,19 +443,17 @@ const Checkout = () => {
                         />
                       </div>
 
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-gray-800">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-bold text-gray-800 line-clamp-1">
                           {product.name || product.title}
                         </p>
-
                         <p className="text-xs text-gray-400">
                           Qty: {item.quantity}
                         </p>
                       </div>
 
-                      <p className="text-sm font-bold text-gray-900">
-                        ₹
-                        {product?.price}
+                      <p className="text-xs sm:text-sm font-bold text-gray-900 shrink-0">
+                        ₹{product?.price}
                       </p>
                     </div>
                   );
@@ -469,20 +469,19 @@ const Checkout = () => {
 
                 <div className="flex justify-between text-sm text-gray-500 font-medium">
                   <span>Shipping</span>
-
                   <span className="text-green-600 font-bold tracking-widest">
                     FREE
                   </span>
                 </div>
 
-                <div className="flex justify-between text-xl font-black text-gray-900 pt-4 border-t border-gray-100">
+                <div className="flex justify-between text-lg sm:text-xl font-black text-gray-900 pt-4 border-t border-gray-100">
                   <span>Total</span>
                   <span>₹{Total}</span>
                 </div>
               </div>
 
               {/* SECURITY */}
-              <div className="mt-8 flex items-center justify-center gap-2 text-gray-300">
+              <div className="mt-8 flex items-center justify-center gap-2 text-gray-400">
                 <svg
                   className="w-4 h-4"
                   fill="currentColor"
@@ -490,7 +489,6 @@ const Checkout = () => {
                 >
                   <path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" />
                 </svg>
-
                 <span className="text-[10px] font-bold uppercase tracking-widest">
                   Secure Checkout
                 </span>

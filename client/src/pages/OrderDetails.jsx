@@ -6,7 +6,6 @@ import { useAuth } from "../context/AuthContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-
 const OrderDetails = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -16,14 +15,13 @@ const OrderDetails = () => {
   const [selectedReview, setSelectedReview] = useState(null);
   const [order, setOrder] = useState(state?.order || null);
 
-  // Review Modal States (UI Only)
+  // Review Modal States
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [selectedItemForReview, setSelectedItemForReview] = useState(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  //  const [productId, setProductId] = useState(order?.orderItems?.[0]?.product || null); // Default to first product if available
-  const [productIds, setProductId] = useState(order?.orderItems?.map((item) => item.product) || []); // Default to first product if available
-  const { handleAddReviews, reviews, setReviews, handleGetSinglegProductReviews, handleUpdateReviews, handleDeleteReviews } = useReview();
+  const [productIds, setProductId] = useState(order?.orderItems?.map((item) => item.product) || []);
+  const { handleAddReviews, reviews, handleGetSinglegProductReviews, handleUpdateReviews, handleDeleteReviews } = useReview();
   const { user } = useAuth();
 
   const handleDownloadInvoice = () => {
@@ -49,16 +47,14 @@ const OrderDetails = () => {
     );
     doc.text(`Status: ${order?.orderStatus || "Pending"}`, 14, 42);
 
-    // 3. Customer & Shipping Info (if available)
+    // 3. Customer & Shipping Info
     if (order?.shippingAddress) {
       doc.setFont("helvetica", "bold");
       doc.text("Shipping Details:", 14, 52);
       doc.setFont("helvetica", "normal");
 
-      // Full Name
       doc.text(`${order.shippingAddress.fullName || order.shippingAddress.name || ""}`, 14, 58);
 
-      // 👇 Street Address Fallback Logic (Saare common keys check karega)
       const streetAddress =
         order.shippingAddress.address ||
         order.shippingAddress.street ||
@@ -68,7 +64,6 @@ const OrderDetails = () => {
 
       doc.text(`${streetAddress}`, 14, 64);
 
-      // City & Postal Code/Pincode
       doc.text(
         `${order.shippingAddress.city || ""}, ${order.shippingAddress.postalCode || order.shippingAddress.pincode || ""}`,
         14,
@@ -133,27 +128,21 @@ const OrderDetails = () => {
     }
   }, [id, handleGetOrderById, order]);
 
-
-  // useEffect(() => {
-  //   if (productId) {
-  //     handleGetSinglegProductReviews(productId);
-  //   }
-  // }, [productId]);
   useEffect(() => {
-  if (productIds.length > 0) {
-   if(Array.isArray(productIds)){
-     productIds.forEach((item) => {
-        handleGetSinglegProductReviews(item);
-      });
-   } else{
-            handleGetSinglegProductReviews(productIds);
-   }
-  }
-}, [productIds, handleGetSinglegProductReviews]);
+    if (productIds.length > 0) {
+      if (Array.isArray(productIds)) {
+        productIds.forEach((item) => {
+          handleGetSinglegProductReviews(item);
+        });
+      } else {
+        handleGetSinglegProductReviews(productIds);
+      }
+    }
+  }, [productIds, handleGetSinglegProductReviews]);
 
   const EditReview = (reviewData) => {
     setSelectedReview(reviewData);
-    setIsEditReviewOpen(true); // Yahan state true hoti hai toh modal khul jata hai
+    setIsEditReviewOpen(true);
   };
 
   const DeleteReview = async (reviewId) => {
@@ -161,9 +150,7 @@ const OrderDetails = () => {
       const confirmDelete = window.confirm("Are you sure you want to delete this review?");
       if (!confirmDelete) return;
 
-      const success = await handleDeleteReviews(reviewId);
-      console.log("Review deleted successfully:", success);
-
+      await handleDeleteReviews(reviewId);
     } catch (error) {
       console.error("Failed to delete review:", error);
     }
@@ -171,22 +158,19 @@ const OrderDetails = () => {
 
   const cutomerReviews = async (product) => {
     try {
-      const response = await handleAddReviews({ product, rating, comment });
-
-      console.log(response);
-      alert("Review submitted successfully! (UI Only)");
+      await handleAddReviews({ product, rating, comment });
+      alert("Review successfully submitted!");
       setIsReviewOpen(false);
       setComment("");
       setProductId("");
-
     } catch (error) {
-      console.log("error to addReview", error)
+      console.log("error to addReview", error);
     }
-  }
+  };
 
   if (!order) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center space-y-4">
+      <div className="h-screen flex flex-col items-center justify-center space-y-4 px-4 text-center">
         <p className="font-black italic text-xl uppercase">Order not found!</p>
         <button onClick={() => navigate(-1)} className="underline font-bold">Go Back</button>
       </div>
@@ -194,10 +178,10 @@ const OrderDetails = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8 animate-in fade-in duration-700 relative">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 animate-in fade-in duration-700 relative w-full overflow-x-hidden">
 
       {/* Header */}
-      <div className="flex justify-between items-end border-b pb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b pb-6">
         <div>
           <button
             onClick={() => navigate(-1)}
@@ -205,20 +189,20 @@ const OrderDetails = () => {
           >
             ← Back to Orders
           </button>
-          <h2 className="text-3xl font-black uppercase italic tracking-tighter">Order Details</h2>
+          <h2 className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter">Order Details</h2>
           <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">
             ID: #{order._id} | Placed on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         </div>
         <button
           onClick={handleDownloadInvoice}
-          className="border border-black px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
+          className="w-full sm:w-auto border border-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
         >
           Download Invoice
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
 
         {/* Left: Items List */}
         <div className="md:col-span-2 space-y-4">
@@ -226,27 +210,19 @@ const OrderDetails = () => {
             Items ({order.orderItems?.length || 0})
           </h3>
 
-          <div className="bg-white border border-gray-100 rounded-[2rem] p-6 space-y-6 shadow-sm">
+          <div className="bg-white border border-gray-100 rounded-[2rem] p-5 sm:p-6 space-y-6 shadow-sm">
             {order.orderItems?.map((item, index) => {
-
-              {/* Maan lijiye aapke paas review data hai jo is item se match karta hai */ }
-              {/* Aap ise apne state ya API data ke mutabiq replace kar sakte hain */ }
-              // Yahan current user ki ID bhi check karein taaki sirf aapka hi review dikhe
-              debugger
               const existingReview = reviews?.find(
-                (rev) =>{
-
-debugger
-                return  (rev.product === item.product || rev.product?._id === item.product) &&
-                  (rev.user?._id === user.id || rev.user === user.id)
-                }
+                (rev) =>
+                  (rev.product === item.product || rev.product?._id === item.product) &&
+                  (rev.user?._id === user?.id || rev.user === user?.id)
               );
-debugger
+
               return (
                 <div key={index} className={`flex flex-col gap-4 ${index !== 0 ? 'border-t pt-6' : ''}`}>
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-4 sm:gap-6">
                     {/* Product Image/Placeholder */}
-                    <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl italic font-black overflow-hidden">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl italic font-black overflow-hidden shrink-0">
                       {item.image ? (
                         <img src={item.image} alt={item.title || item.name} className="w-full h-full object-cover" />
                       ) : (
@@ -254,21 +230,20 @@ debugger
                       )}
                     </div>
 
-                    <div className="flex-1">
-                      <h4 className="font-black uppercase text-sm">{item.title || item.name}</h4>
-                      <p className="text-xs text-gray-400 font-bold uppercase mt-1">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-black uppercase text-xs sm:text-sm truncate">{item.title || item.name}</h4>
+                      <p className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase mt-1">
                         Qty: {item.quantity || 1} | Price: ₹{item.price || item.totalPrice}
                       </p>
                     </div>
 
-                    <p className="font-black italic">₹{((item.price || item.totalPrice) * (item.quantity || 1)).toFixed(2)}</p>
+                    <p className="font-black italic text-xs sm:text-sm shrink-0">₹{((item.price || item.totalPrice) * (item.quantity || 1)).toFixed(2)}</p>
                   </div>
 
-                  {/* Rate & Review Button / Review Card Section (Only shows if order is Delivered) */}
+                  {/* Rate & Review Button / Review Card Section */}
                   {order.orderStatus === "Delivered" && (
                     <div className="pt-2">
                       {existingReview ? (
-                        /* --- REVIEW ALREADY GIVEN: Show Review Card with Edit & Delete Buttons --- */
                         <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
@@ -280,7 +255,6 @@ debugger
                             <p className="text-xs text-gray-700 font-medium">"{existingReview.comment}"</p>
                           </div>
 
-                          {/* Edit & Delete Action Buttons */}
                           <div className="flex items-center gap-2 self-end sm:self-center">
                             <button
                               onClick={() => EditReview(existingReview)}
@@ -297,7 +271,6 @@ debugger
                           </div>
                         </div>
                       ) : (
-                        /* --- NO REVIEW GIVEN YET: Show Rate & Review Button --- */
                         <div className="flex justify-end">
                           <button
                             onClick={() => {
@@ -323,7 +296,7 @@ debugger
         <div className="space-y-6">
 
           {/* Order Summary Card */}
-          <div className="bg-black text-white rounded-[2rem] p-8 shadow-xl">
+          <div className="bg-black text-white rounded-[2rem] p-6 sm:p-8 shadow-xl">
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 opacity-60">Order Summary</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between opacity-80">
@@ -339,7 +312,7 @@ debugger
                 <span>₹0.00</span>
               </div>
 
-              <div className="border-t border-white/10 pt-4 mt-4 flex justify-between text-xl font-black italic">
+              <div className="border-t border-white/10 pt-4 mt-4 flex justify-between text-lg sm:text-xl font-black italic">
                 <span>Total</span>
                 <span>₹{Number(order.totalPrice).toFixed(2)}</span>
               </div>
@@ -354,7 +327,7 @@ debugger
           </div>
 
           {/* Delivery Address Card */}
-          <div className="bg-white border border-gray-100 rounded-[2rem] p-8">
+          <div className="bg-white border border-gray-100 rounded-[2rem] p-6 sm:p-8">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Delivery Address</h3>
             <p className="font-black text-sm uppercase leading-tight">{order.shippingAddress?.fullName}</p>
             <p className="text-xs text-gray-500 font-medium mt-2 leading-relaxed">
@@ -380,10 +353,10 @@ debugger
         </div>
       </div>
 
-      {/* ================= REVIEW MODAL (UI ONLY) ================= */}
+      {/* ================= REVIEW MODAL ================= */}
       {isReviewOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+          <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-6 sm:p-8 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
 
             <div className="flex justify-between items-center border-b pb-4">
               <div>
@@ -428,14 +401,9 @@ debugger
               ></textarea>
             </div>
 
-            {/* Submit Button (UI Only) */}
+            {/* Submit Button */}
             <button
-              onClick={() => {
-                cutomerReviews(productIds)
-                // alert("Review submitted successfully! (UI Only)");
-                // setIsReviewOpen(false);
-                // setComment("");
-              }}
+              onClick={() => cutomerReviews(productIds)}
               className="w-full bg-black text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-orange-500 transition-colors shadow-lg"
             >
               Submit Review
@@ -446,7 +414,6 @@ debugger
       )}
 
       {/* ================= EDIT REVIEW MODAL ================= */}
-
       <EditReviewModal
         isOpen={isEditReviewOpen}
         onClose={() => setIsEditReviewOpen(false)}
@@ -457,14 +424,10 @@ debugger
   );
 };
 
-
-
 const EditReviewModal = ({ isOpen, onClose, review, handleUpdateReviews }) => {
-  // Local state for form inputs
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
 
-  // Jab bhi modal khule ya review data change ho, purana data fields me pre-fill kar do
   useEffect(() => {
     if (review) {
       setRating(review.rating || 5);
@@ -472,13 +435,11 @@ const EditReviewModal = ({ isOpen, onClose, review, handleUpdateReviews }) => {
     }
   }, [review]);
 
-
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log("Updating review with ID:", review._id, "Rating:", rating, "Comment:", comment);
       await handleUpdateReviews(review._id, { rating, comment });
       onClose();
     } catch (error) {
@@ -489,14 +450,9 @@ const EditReviewModal = ({ isOpen, onClose, review, handleUpdateReviews }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white p-6 rounded-2xl w-full max-w-md relative shadow-2xl">
-
-        {/* Header */}
         <h2 className="text-xl font-bold mb-4 text-gray-800">Edit Review</h2>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-
-          {/* Rating Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Rating
@@ -514,7 +470,6 @@ const EditReviewModal = ({ isOpen, onClose, review, handleUpdateReviews }) => {
             </select>
           </div>
 
-          {/* Comment Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Comment
@@ -529,7 +484,6 @@ const EditReviewModal = ({ isOpen, onClose, review, handleUpdateReviews }) => {
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
@@ -547,14 +501,12 @@ const EditReviewModal = ({ isOpen, onClose, review, handleUpdateReviews }) => {
           </div>
         </form>
 
-        {/* Close (X) Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold text-lg"
         >
           ✕
         </button>
-
       </div>
     </div>
   );

@@ -1,73 +1,78 @@
 import React, { useState } from "react";
-import { forgotPassword, resetPassword } from "../services/authApi";
-import { useNavigate } from "react-router-dom";
+import { forgotPassword } from "../services/authApi";
+import { useNavigate, Link } from "react-router-dom";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(""); // Clear previous errors
+
+    if (!email.trim()) {
+      setError("Email is required");
+      return;
+    }
+
+    const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
+    if (!emailPattern.test(email.trim())) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     try {
-      e.preventDefault();
-      console.log("Email:", email);
-      if (!email) {
-        setError("Email is required");
-        return;
+      setLoading(true);
+      const responseData = await forgotPassword(email.trim().toLowerCase());
+
+      if (responseData?.success || responseData) {
+        navigate("/reset-password", { state: { email: email.trim().toLowerCase() } });
       }
-
-      let emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-
-      if (!emailPattern.test(email)) {
-        setError("Please enter a valid email address");
-        return; // Aage ka code execute hone se rokne ke liye
-      }
-      const responseData = await forgotPassword(email);
-
-      if(responseData.success){
-       navigate("/reset-password", {state:{email}})
-      }
-
     } catch (error) {
-        const message = error.response?.data?.message;
-        alert(message)
+      const message = error.response?.data?.message || "Failed to send reset OTP. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 w-full overflow-x-hidden font-sans">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+
         {/* Header */}
-        <div className="bg-blue-600 text-white text-center py-6">
-          <h2 className="text-2xl font-bold">Forgot Password</h2>
-          <p className="text-sm mt-1">
+        <div className="bg-blue-600 text-white text-center py-6 px-4">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight">Forgot Password</h2>
+          <p className="text-xs sm:text-sm mt-1 opacity-90 font-medium">
             Enter your email to reset your password
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6">
-          <label className="block text-sm font-semibold text-gray-600 mb-2">
-            EMAIL
-          </label>
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-4">
+          <div>
+            <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1">
+              Email Address
+            </label>
 
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-          />
+            <input
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError(""); // Clear error when typing
+              }}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-black text-xs sm:text-sm bg-gray-50 transition-all"
+            />
+          </div>
 
-          {/* {error && (
-            <p className="text-xs text-red-500 font-medium mt-1 text-left">
-              {error}
-            </p>
-          )} */}
-
+          {/* Error Banner */}
           {error && (
-            <p className="text-xs text-red-500 font-medium text-center mt-3 bg-red-50 py-2 px-3 rounded-xl border border-red-100 flex items-center justify-center gap-1.5">
-              {/* Ek chota warning icon (Optional) */}
+            <p className="text-xs text-red-500 font-bold text-center mt-2 bg-red-50 py-2.5 px-3 rounded-xl border border-red-100 flex items-center justify-center gap-1.5">
               <svg
                 className="w-4 h-4 shrink-0"
                 fill="currentColor"
@@ -79,23 +84,27 @@ const ForgotPassword = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              {error}
+              <span>{error}</span>
             </p>
           )}
 
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
+            disabled={loading}
+            className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm py-3.5 rounded-xl transition-all active:scale-95 shadow-md disabled:opacity-50"
           >
-            Send Reset OTP
+            {loading ? "Sending OTP..." : "Send Reset OTP"}
           </button>
 
-          <div className="text-center mt-5">
-            <a href="/login" className="text-blue-600 hover:underline text-sm">
+          {/* Back to Login */}
+          <div className="text-center pt-2">
+            <Link to="/login" className="text-xs sm:text-sm text-blue-600 font-bold hover:underline">
               Back to Login
-            </a>
+            </Link>
           </div>
         </form>
+
       </div>
     </div>
   );

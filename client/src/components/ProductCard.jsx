@@ -4,35 +4,35 @@ import { useWishList } from "../context/WishlistContext";
 
 function ProductCard({ product }) {
   const { handleAddToCart } = useCart();
-  const { wishlistItems, addItem, removeItem, clearAll, isInWishlist } = useWishList();
+  const { addItem, removeItem, isInWishlist } = useWishList();
 
-  // Check karein ki current product wishlist me pehle se hai ya nahi
-  const isWishlisted = isInWishlist(product._id)
- 
+  const isWishlisted = isInWishlist(product._id);
 
-  // Heart Icon Click Handler
   const handleWishlistClick = (e) => {
-    e.preventDefault(); // Link click trigger hone se rokne ke liye
-    e.stopPropagation(); // Event bubbling rokne ke liye
+    e.preventDefault();
+    e.stopPropagation();
 
     if (isWishlisted) {
-      removeItem(product._id)
+      removeItem(product._id);
     } else {
-      addItem(product._id)
+      addItem(product._id);
     }
   };
 
+  const hasDiscount =
+    product.discountPrice && product.price > product.discountPrice;
+
   return (
-    <div className="bg-white rounded-xl shadow hover:shadow-xl transition p-4 flex flex-col h-full border border-gray-100 relative group">
-      {/* 1. ❤️ Wishlist Floating Button (Top-Right Corner) */}
+    <div className="bg-white rounded-xl shadow hover:shadow-xl transition p-3 sm:p-4 flex flex-col h-full border border-gray-100 relative group w-full">
+      {/* 1. ❤️ Wishlist Floating Button */}
       <button
         onClick={handleWishlistClick}
         type="button"
-        className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white backdrop-blur-md shadow-md hover:scale-110 hover:bg-red-50 transition-all group"
+        className="absolute top-2.5 right-2.5 z-10 p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:scale-110 hover:bg-red-50 transition-all"
         title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
       >
         <svg
-          className={`w-6 h-6 transition-all duration-300 ${isWishlisted
+          className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isWishlisted
               ? "fill-red-500 stroke-red-500 scale-105"
               : "fill-none stroke-gray-500 group-hover:stroke-red-500"
             }`}
@@ -47,7 +47,6 @@ function ProductCard({ product }) {
         </svg>
       </button>
 
-
       {/* 2. Product Detail Link & Content */}
       <Link
         to="/productdetail"
@@ -55,18 +54,18 @@ function ProductCard({ product }) {
         className="flex-1 flex flex-col"
       >
         {/* Image Section */}
-        <div className="relative">
+        <div className="relative overflow-hidden rounded-lg mb-3">
           <img
             src={product.images?.[0] || "/placeholder.jpg"}
             alt={product.name}
-            className="h-48 w-full object-contain mb-4 group-hover:scale-105 transition-transform duration-300"
+            className="h-40 sm:h-48 w-full object-contain group-hover:scale-105 transition-transform duration-300"
           />
 
           {/* Discount Badge */}
-          {product.discountPrice && product.price > product.discountPrice && (
+          {hasDiscount && (
             <span className="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-r-full">
               {Math.round(
-                ((product.price - product.discountPrice) / product.price) * 100,
+                ((product.price - product.discountPrice) / product.price) * 100
               )}
               % OFF
             </span>
@@ -74,12 +73,12 @@ function ProductCard({ product }) {
         </div>
 
         {/* Product Name */}
-        <h3 className="text-sm font-semibold mb-1 text-gray-800 line-clamp-2">
+        <h3 className="text-sm sm:text-base font-semibold mb-1 text-gray-800 line-clamp-2">
           {product.name}
         </h3>
 
         {/* ⭐ Rating & Reviews Section */}
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2.5">
           <div className="flex items-center bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-xs font-bold">
             {product.averageRating ? product.averageRating.toFixed(1) : "0.0"}
             <span className="ml-0.5">★</span>
@@ -90,11 +89,13 @@ function ProductCard({ product }) {
         </div>
 
         {/* Price Section */}
-        <div className="flex items-baseline gap-2 mb-2 mt-auto">
-          <p className="text-xl font-bold text-gray-900">₹ {product.price}</p>
-          {product.discountPrice && (
+        <div className="flex flex-wrap items-baseline gap-2 mb-1.5 mt-auto">
+          <p className="text-lg sm:text-xl font-bold text-gray-900">
+            ₹ {hasDiscount ? product.discountPrice : product.price}
+          </p>
+          {hasDiscount && (
             <p className="text-xs text-gray-400 line-through">
-              ₹ {product.discountPrice}
+              ₹ {product.price}
             </p>
           )}
         </div>
@@ -112,9 +113,9 @@ function ProductCard({ product }) {
       <button
         onClick={() => handleAddToCart(product)}
         disabled={product.stock === 0}
-        className={`mt-auto w-full py-2.5 rounded-lg font-semibold transition-all ${product.stock > 0
-          ? "bg-black text-white hover:bg-gray-800 active:scale-95 shadow-md shadow-gray-200"
-          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        className={`mt-auto w-full py-2 sm:py-2.5 text-sm sm:text-base rounded-lg font-semibold transition-all ${product.stock > 0
+            ? "bg-black text-white hover:bg-gray-800 active:scale-95 shadow-md shadow-gray-200"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
       >
         {product.stock > 0 ? "Add to Cart" : "Out of Stock"}

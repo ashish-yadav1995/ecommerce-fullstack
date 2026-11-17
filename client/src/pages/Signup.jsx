@@ -13,19 +13,13 @@ const Signup = () => {
   };
 
   const [formData, setFormData] = useState(initialValue);
-
-  // false = customer, true = seller
   const [isSeller, setIsSeller] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
-
   const [error, setError] = useState({});
-
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData({
       ...formData,
       [name]: value,
@@ -34,7 +28,6 @@ const Signup = () => {
 
   const validateForm = () => {
     const formError = {};
-
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     if (!formData.fullName.trim()) {
@@ -66,7 +59,6 @@ const Signup = () => {
     e.preventDefault();
 
     const validationErrors = validateForm();
-
     setError(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -86,8 +78,6 @@ const Signup = () => {
         response = await registerUser(name, email, password);
       }
 
-      // OTP page par email bhejenge
-      // navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
       navigate("/verify-otp", { state: { email: email } });
     } catch (error) {
       const errorData = error.response?.data;
@@ -96,7 +86,6 @@ const Signup = () => {
         errorData?.message || "Registration failed. Please try again.";
 
       if (status === 403 && errorData?.code === "EMAIL_NOT_VERIFIED") {
-        //  setError({ submit: message });
         alert(message);
         navigate("/verify-otp", { state: { email: errorData?.email } });
       }
@@ -110,18 +99,17 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6 w-full overflow-x-hidden font-sans">
       {/* Customer / Seller Toggle */}
-      <div className="flex bg-white p-1 rounded-full shadow-md mb-6 w-64 border border-gray-200">
+      <div className="flex bg-white p-1 rounded-full shadow-md mb-6 w-full max-w-[260px] border border-gray-200">
         <button
           type="button"
           onClick={() => {
             setIsSeller(false);
             setError({});
           }}
-          className={`flex-1 py-2 rounded-full text-sm font-bold transition-all ${
-            !isSeller ? "bg-blue-600 text-white shadow-lg" : "text-gray-500"
-          }`}
+          className={`flex-1 py-2 rounded-full text-xs sm:text-sm font-bold transition-all ${!isSeller ? "bg-blue-600 text-white shadow-lg" : "text-gray-500"
+            }`}
         >
           Customer
         </button>
@@ -132,40 +120,36 @@ const Signup = () => {
             setIsSeller(true);
             setError({});
           }}
-          className={`flex-1 py-2 rounded-full text-sm font-bold transition-all ${
-            isSeller ? "bg-green-600 text-white shadow-lg" : "text-gray-500"
-          }`}
+          className={`flex-1 py-2 rounded-full text-xs sm:text-sm font-bold transition-all ${isSeller ? "bg-green-600 text-white shadow-lg" : "text-gray-500"
+            }`}
         >
           Seller
         </button>
       </div>
 
       {/* Main Card */}
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
         <div
-          className={`py-4 text-center text-white font-bold text-xl transition-colors ${
-            isSeller ? "bg-green-600" : "bg-blue-600"
-          }`}
+          className={`py-4 text-center text-white font-bold text-lg sm:text-xl transition-colors ${isSeller ? "bg-green-600" : "bg-blue-600"
+            }`}
         >
           {isSeller ? "Seller Registration" : "Customer Registration"}
         </div>
 
-        <form className="p-6 space-y-4" onSubmit={handleSubmit}>
+        <form className="p-6 sm:p-8 space-y-4" onSubmit={handleSubmit}>
           {/* Full Name */}
           <div>
             <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1">
               Full Name
             </label>
-
             <input
               name="fullName"
               type="text"
               value={formData.fullName}
               onChange={handleChange}
               placeholder="Name"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-sm"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-xs sm:text-sm"
             />
-
             {error.fullName && (
               <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">
                 {error.fullName}
@@ -178,7 +162,6 @@ const Signup = () => {
             <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1">
               Email
             </label>
-
             <input
               name="email"
               type="email"
@@ -186,9 +169,8 @@ const Signup = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="name@example.com"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-sm"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-xs sm:text-sm"
             />
-
             {error.email && (
               <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">
                 {error.email}
@@ -201,7 +183,6 @@ const Signup = () => {
             <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1">
               Password
             </label>
-
             <input
               name="password"
               autoComplete="new-password"
@@ -209,17 +190,15 @@ const Signup = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-sm"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-xs sm:text-sm pr-10"
             />
-
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[30px] text-gray-400"
+              className="absolute right-3 top-[32px] text-gray-400 text-sm"
             >
               {showPassword ? "👁️" : "🙈"}
             </button>
-
             {error.password && (
               <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">
                 {error.password}
@@ -232,16 +211,14 @@ const Signup = () => {
             <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 ml-1">
               Confirm Password
             </label>
-
             <input
               name="confirmPassword"
               type={showPassword ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="••••••••"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-sm"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-xs sm:text-sm"
             />
-
             {error.confirmPassword && (
               <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">
                 {error.confirmPassword}
@@ -251,7 +228,7 @@ const Signup = () => {
 
           {/* Backend Error */}
           {error.submit && (
-            <p className="text-sm text-red-500 font-bold text-center">
+            <p className="text-xs text-red-500 font-bold text-center">
               {error.submit}
             </p>
           )}
@@ -260,11 +237,10 @@ const Signup = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full text-white py-3.5 rounded-xl font-black text-base mt-2 transition-all active:scale-95 shadow-md ${
-              isSeller
+            className={`w-full text-white py-3.5 rounded-xl font-black text-xs sm:text-sm mt-2 transition-all active:scale-95 shadow-md ${isSeller
                 ? "bg-green-600 hover:bg-green-700"
                 : "bg-blue-600 hover:bg-blue-700"
-            } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+              } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
           >
             {loading ? "Creating Account..." : "Register Account"}
           </button>

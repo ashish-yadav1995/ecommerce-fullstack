@@ -13,7 +13,6 @@ function AdminProducts() {
     try {
       setLoading(true);
       const res = await getAllAdminProducts();
-      console.log("Admin Products API Response:", res);
       setProducts(res.products || res.data || res || []);
     } catch (error) {
       console.error("Failed to fetch products:", error);
@@ -27,7 +26,7 @@ function AdminProducts() {
   }, []);
 
   const handleToggleStatus = async (e, id, currentStatus) => {
-    e.stopPropagation(); // 👈 Button click karne par modal open nahi hoga
+    e.stopPropagation();
     try {
       if (currentStatus) {
         await deactivateProduct(id);
@@ -45,14 +44,14 @@ function AdminProducts() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="font-bold text-gray-500">Loading products...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <p className="font-bold text-gray-500 text-sm">Loading products...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 font-sans">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 font-sans w-full overflow-x-hidden">
       <div className="max-w-6xl mx-auto">
         <button
           onClick={() => navigate("/admin")}
@@ -61,19 +60,16 @@ function AdminProducts() {
           ← Back to Dashboard
         </button>
 
-        <h1 className="text-3xl font-black text-gray-900 mb-6">Manage Products</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-6">Manage Products</h1>
 
         {products.length === 0 ? (
-          <p className="text-gray-500">No products found on platform.</p>
+          <p className="text-gray-500 text-sm">No products found on platform.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {products.map((p) => (
-              <div 
-                key={p._id} 
-                onClick={() => {
-                  console.log("Card clicked:", p); // Debugging ke liye
-                  setSelectedProduct(p);
-                }}
+              <div
+                key={p._id}
+                onClick={() => setSelectedProduct(p)}
                 className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between cursor-pointer hover:border-black transition"
               >
                 <div>
@@ -84,22 +80,21 @@ function AdminProducts() {
                       className="h-full w-full object-contain p-2"
                     />
                   </div>
-                  <h4 className="font-bold text-gray-800 line-clamp-1">{p.name}</h4>
+                  <h4 className="font-bold text-gray-800 text-sm sm:text-base line-clamp-1">{p.name}</h4>
                   <p className="text-xs text-gray-400 mt-0.5">Seller: {p.seller?.name || "N/A"}</p>
-                  <p className="font-black text-lg text-gray-900 mt-2">₹{p.discountPrice || p.price}</p>
+                  <p className="font-black text-base sm:text-lg text-gray-900 mt-2">₹{p.discountPrice || p.price}</p>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${p.isActive !== false ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold ${p.isActive !== false ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                     {p.isActive !== false ? "Active" : "Inactive"}
                   </span>
                   <button
                     onClick={(e) => handleToggleStatus(e, p._id, p.isActive !== false)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                      p.isActive !== false
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${p.isActive !== false
                         ? "border border-red-500 text-red-600 hover:bg-red-50"
                         : "bg-black text-white hover:bg-gray-800"
-                    }`}
+                      }`}
                   >
                     {p.isActive !== false ? "Deactivate" : "Activate"}
                   </button>
@@ -113,7 +108,7 @@ function AdminProducts() {
       {/* PRODUCT DETAIL MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedProduct(null)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-black hover:text-white font-bold transition"
@@ -121,7 +116,7 @@ function AdminProducts() {
               ✕
             </button>
 
-            <div className="h-56 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden mb-4 p-4">
+            <div className="h-48 sm:h-56 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden mb-4 p-4">
               <img
                 src={selectedProduct.images?.[0]?.url || selectedProduct.images?.[0] || myimg}
                 alt={selectedProduct.name}
@@ -129,31 +124,31 @@ function AdminProducts() {
               />
             </div>
 
-            <div className="flex justify-between items-start gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-full">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-full inline-block">
                   {selectedProduct.category?.name || "General"}
                 </span>
-                <h2 className="text-xl font-black text-gray-900 mt-2">{selectedProduct.name}</h2>
+                <h2 className="text-lg sm:text-xl font-black text-gray-900 mt-2">{selectedProduct.name}</h2>
                 <p className="text-xs text-gray-500 mt-1">
                   Seller: <span className="font-bold text-gray-700">{selectedProduct.seller?.name || "Admin"}</span> ({selectedProduct.seller?.email || "N/A"})
                 </p>
               </div>
-              <p className="text-2xl font-black text-gray-900">₹{selectedProduct.discountPrice || selectedProduct.price}</p>
+              <p className="text-xl sm:text-2xl font-black text-gray-900">₹{selectedProduct.discountPrice || selectedProduct.price}</p>
             </div>
 
-            <p className="text-sm text-gray-600 mt-4 leading-relaxed max-h-32 overflow-y-auto">
+            <p className="text-xs sm:text-sm text-gray-600 mt-4 leading-relaxed max-h-32 overflow-y-auto font-medium">
               {selectedProduct.description || "No description provided for this product."}
             </p>
 
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-3.5 rounded-2xl mt-4 text-xs">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 bg-gray-50 p-3.5 rounded-2xl mt-4 text-xs">
               <div>
                 <span className="text-gray-400 block font-medium">Stock Available</span>
-                <span className="font-bold text-gray-800 text-sm">{selectedProduct.stock ?? "N/A"} units</span>
+                <span className="font-bold text-gray-800 text-xs sm:text-sm">{selectedProduct.stock ?? "N/A"} units</span>
               </div>
               <div>
                 <span className="text-gray-400 block font-medium">Platform Status</span>
-                <span className={`font-bold text-sm ${selectedProduct.isActive !== false ? "text-green-600" : "text-red-600"}`}>
+                <span className={`font-bold text-xs sm:text-sm ${selectedProduct.isActive !== false ? "text-green-600" : "text-red-600"}`}>
                   {selectedProduct.isActive !== false ? "Active" : "Inactive"}
                 </span>
               </div>
