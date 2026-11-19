@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const Checkout = () => {
-  const { cart, grandTotal, fetchCart } = useCart();
+  const { cart, fetchCart } = useCart();
   const { placeOrder } = useOrder();
   const { addresses, handleAddNewAddress } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -23,6 +23,21 @@ const Checkout = () => {
   } = useForm({
     mode: "onBlur",
   });
+
+  // Helper to get final selling price (MRP - discount amount)
+  const getEffectivePrice = (product) => {
+    if (!product) return 0;
+    const hasDiscount =
+      product.discountPrice > 0 && product.price > product.discountPrice;
+    return hasDiscount ? product.price - product.discountPrice : product.price;
+  };
+
+  // Calculate accurate Total matching ProductCard & Cart
+  const Total =
+    cart?.reduce((sum, item) => {
+      const product = item.product || item;
+      return sum + getEffectivePrice(product) * item.quantity;
+    }, 0) || 0;
 
   // Function to fill form when address is selected
   const handleSelectAddress = (addr) => {
@@ -71,7 +86,6 @@ const Checkout = () => {
       setLoading(true);
       let addressId = selectedAddressId;
 
-      // Agar koi address selected nahi hai, matlab naya address save karna padega
       if (!addressId) {
         const addressResponse = await handleAddNewAddress(data);
         addressId =
@@ -98,8 +112,6 @@ const Checkout = () => {
       setLoading(false);
     }
   };
-
-  const Total = grandTotal || 0;
 
   useEffect(() => {
     fetchCart();
@@ -146,10 +158,11 @@ const Checkout = () => {
                         <div
                           key={addr._id}
                           onClick={() => handleSelectAddress(addr)}
-                          className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${isSelected
+                          className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                            isSelected
                               ? "border-black bg-gray-50 shadow-sm"
                               : "border-gray-100 bg-white hover:border-gray-200"
-                            }`}
+                          }`}
                         >
                           <div className="flex justify-between items-center mb-1">
                             <span className="font-bold text-sm text-gray-900 line-clamp-1">
@@ -429,6 +442,8 @@ const Checkout = () => {
               <div className="space-y-4 mb-8 max-h-72 overflow-y-auto pr-2">
                 {cart?.map((item, index) => {
                   const product = item.product || item;
+                  const effectivePrice = getEffectivePrice(product);
+                  const itemTotal = effectivePrice * item.quantity;
 
                   return (
                     <div
@@ -448,12 +463,12 @@ const Checkout = () => {
                           {product.name || product.title}
                         </p>
                         <p className="text-xs text-gray-400">
-                          Qty: {item.quantity}
+                          Qty: {item.quantity} × ₹{effectivePrice}
                         </p>
                       </div>
 
                       <p className="text-xs sm:text-sm font-bold text-gray-900 shrink-0">
-                        ₹{product?.price}
+                        ₹{itemTotal}
                       </p>
                     </div>
                   );

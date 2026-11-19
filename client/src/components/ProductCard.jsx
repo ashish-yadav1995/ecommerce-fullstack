@@ -19,8 +19,15 @@ function ProductCard({ product }) {
     }
   };
 
+  // discountPrice is treated as the discount amount off product.price
   const hasDiscount =
-    product.discountPrice && product.price > product.discountPrice;
+    product.discountPrice &&
+    product.discountPrice > 0 &&
+    product.price > product.discountPrice;
+
+  const finalPrice = hasDiscount
+    ? product.price - product.discountPrice
+    : product.price;
 
   return (
     <div className="bg-white rounded-xl shadow hover:shadow-xl transition p-3 sm:p-4 flex flex-col h-full border border-gray-100 relative group w-full">
@@ -64,10 +71,7 @@ function ProductCard({ product }) {
           {/* Discount Badge */}
           {hasDiscount && (
             <span className="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-r-full">
-              {Math.round(
-                ((product.price - product.discountPrice) / product.price) * 100
-              )}
-              % OFF
+              {Math.round((product.discountPrice / product.price) * 100)}% OFF
             </span>
           )}
         </div>
@@ -91,12 +95,17 @@ function ProductCard({ product }) {
         {/* Price Section */}
         <div className="flex flex-wrap items-baseline gap-2 mb-1.5 mt-auto">
           <p className="text-lg sm:text-xl font-bold text-gray-900">
-            ₹ {hasDiscount ? product.discountPrice : product.price}
+            ₹ {finalPrice}
           </p>
           {hasDiscount && (
-            <p className="text-xs text-gray-400 line-through">
-              ₹ {product.price}
-            </p>
+            <>
+              <p className="text-xs text-gray-400 line-through">
+                ₹ {product.price}
+              </p>
+              <span className="text-[11px] font-semibold text-green-600">
+                Save ₹ {product.discountPrice}
+              </span>
+            </>
           )}
         </div>
 

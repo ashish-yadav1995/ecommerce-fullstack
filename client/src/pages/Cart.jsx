@@ -12,7 +12,6 @@ function Cart() {
     handleQuantityChange,
     handleRemoveItem,
     handleClearCart,
-    grandTotal,
     actionLoading,
   } = useCart();
   const { addItem } = useWishList();
@@ -28,6 +27,19 @@ function Cart() {
       await addItem(productId);
     }
   };
+
+  // Helper to get final selling price (MRP - discount amount)
+  const getEffectivePrice = (product) => {
+    const hasDiscount =
+      product.discountPrice > 0 && product.price > product.discountPrice;
+    return hasDiscount ? product.price - product.discountPrice : product.price;
+  };
+
+  // Calculate accurate grand total matching item subtotals
+  const calculatedGrandTotal = cart.reduce((total, item) => {
+    if (!item.product) return total;
+    return total + getEffectivePrice(item.product) * item.quantity;
+  }, 0);
 
   // ==========================================
   // LOADING
@@ -101,9 +113,7 @@ function Cart() {
               const hasDiscount =
                 product.discountPrice > 0 &&
                 product.price > product.discountPrice;
-              const effectivePrice = hasDiscount
-                ? product.discountPrice
-                : product.price;
+              const effectivePrice = getEffectivePrice(product);
               const subtotal = effectivePrice * item.quantity;
 
               return (
@@ -166,10 +176,13 @@ function Cart() {
                         {hasDiscount ? (
                           <div className="flex items-baseline gap-2">
                             <span className="text-base sm:text-lg font-bold text-green-600">
-                              ₹{product.discountPrice}
+                              ₹{effectivePrice}
                             </span>
                             <span className="text-xs sm:text-sm text-gray-400 line-through">
                               ₹{product.price}
+                            </span>
+                            <span className="text-xs font-medium text-green-600">
+                              (Save ₹{product.discountPrice})
                             </span>
                           </div>
                         ) : (
@@ -244,13 +257,13 @@ function Cart() {
 
               <div className="flex justify-between text-sm sm:text-base mb-3">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">₹{grandTotal}</span>
+                <span className="font-medium">₹{calculatedGrandTotal}</span>
               </div>
 
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between text-lg sm:text-xl font-bold text-gray-900">
                   <span>Total</span>
-                  <span>₹{grandTotal}</span>
+                  <span>₹{calculatedGrandTotal}</span>
                 </div>
               </div>
 

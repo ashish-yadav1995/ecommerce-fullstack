@@ -29,17 +29,32 @@ function CartProvider({ children }) {
   const [getTotalItems, setGetTotalItems] = useState(0);
   const { user } = useAuth(); 
 
-  const handleAddToCart = async (product) => {
-    try {
-      const response = await addToCart(product._id, { quantity: 1 });
-      alert(response.message || "Product added to cart successfully!");
-      if (response.success) {
-        fetchCart(); // Fetch the updated cart after adding an item
-      }
-    } catch (error) {
-      alert("Failed to add product to cart. Please try again.");
+ const handleAddToCart = async (product) => {
+  if (!user) {
+    alert("Please login first to add items to your cart.");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const response = await addToCart(product._id, { quantity: 1 });
+    alert(response.message || "Product added to cart successfully!");
+    if (response.success) {
+      fetchCart();
     }
-  };
+  } catch (error) {
+    if (error.response?.status === 401) {
+      alert("Session expired or not logged in. Please login to continue.");
+      navigate("/login");
+      return;
+    }
+
+    alert(
+      error.response?.data?.message ||
+        "Failed to add product to cart. Please try again."
+    );
+  }
+};
 
   const fetchCart = useCallback(async () => {
     try {

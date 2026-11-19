@@ -41,6 +41,10 @@ exports.placeOrder = asyncHandler(async (req, res) => {
   for (const item of cartItems) {
     const product = item.product;
 
+    if (!product) {
+      throw new ApiError(404, "Product not found");
+    }
+
     if (!product.isActive) {
       throw new ApiError(400, `${product.name} is unavailable`);
     }
@@ -49,7 +53,12 @@ exports.placeOrder = asyncHandler(async (req, res) => {
       throw new ApiError(400, `${product.name} is out of stock`);
     }
 
-    const price =  product?.price;
+    // 🛠️ FIX: Apply discountPrice (MRP - discount amount)
+    const hasDiscount =
+      product.discountPrice > 0 && product.price > product.discountPrice;
+    const price = hasDiscount
+      ? product.price - product.discountPrice
+      : product.price;
 
     orderItems.push({
       product: product._id,
@@ -71,26 +80,18 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 
   const order = await Order.create({
     user,
-
     orderItems,
-
     shippingAddress,
-
     itemsPrice,
-
     shippingPrice,
-
     taxPrice,
-
     totalPrice,
-
     paymentMethod,
   });
 
   // Reduce Stock
   for (const item of cartItems) {
     item.product.stock -= item.quantity;
-
     await item.product.save();
   }
 
@@ -99,10 +100,8 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     success: true,
-
     message: "Order placed successfully",
-
-     order,
+    order,
   });
 });
 
