@@ -52,7 +52,7 @@ exports.register = asyncHandler(async (req, res) => {
   const hashedPassword = await hashPassword(password);
 
   // 5. Generate OTP
-  generatedOTP = () => {
+  const generatedOTP = () => {
     return crypto.randomInt(100000, 1000000).toString();
   };
 
@@ -266,7 +266,6 @@ exports.resendOTP = asyncHandler(async (req, res) => {
 exports.login = asyncHandler(async (req, res) => {
   const email = req.body.email?.trim().toLowerCase();
   const { password } = req.body;
-  console.log("Login request received for email:", email,password);
   // 1. Validate fields
   if (!email || !password) {
     throw new ApiError(400, "Email and password are required");
@@ -375,7 +374,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "No account found with this email");
   }
-// 5. Generate NEW OTP
+  // 5. Generate NEW OTP
   const generatedOTP = () => {
     return crypto.randomInt(100000, 1000000).toString();
   };

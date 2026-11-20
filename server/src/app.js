@@ -1,7 +1,93 @@
+// const express = require("express");
+// const helmet = require("helmet");
+// const cors = require("cors");
+// const cookieParser = require("cookie-parser")
+// const { apiLimiter } = require("./middlewares/rateLimiter");
+// const errorHandler = require("./middlewares/errorHandler");
+// const categoryRoutes = require("./routes/categoryRoute");
+// const authRoutes = require("./routes/authRoutes");
+// const productRoutes = require("./routes/productRoute");
+// const cartRoutes = require("./routes/cartRoutes");
+// const wishlistRoutes = require("./routes/wishlistRoutes");
+// const addressRoutes = require("./routes/addressRoutes");
+// const orderRoutes = require("./routes/orderRoutes");
+// const reviewRoutes = require("./routes/reviewRoutes");
+// const userRoutes = require("./routes/userRoutes");
+// const sellerRoutes = require("./routes/sellerRoutes")
+// const adminRoutes = require("./routes/adminRoutes");
+// const app = express();
+
+// app.use(helmet());
+
+// //  app.use(cors())
+// const allowedOrigins = [process.env.CLIENT_URL];
+
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       // Postman / server-to-server requests
+//       if (!origin) {
+//         return callback(null, true);
+//       }
+
+//       if (allowedOrigins.includes(origin)) {
+//         return callback(null, true);
+//       }
+
+//       return callback(new Error("Not allowed by CORS"));
+//     },
+
+//     credentials: true,
+//   }),
+// );
+
+// // app.use(express.json());
+
+// // src/app.js me check aur change karein:
+// app.use(express.json({ limit: "10kb" })); // 👈 10kb se badi payload aate hi block ho jayegi
+// app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+// app.use(cookieParser());
+
+// app.use("/api", apiLimiter);
+
+// app.use("/api/v1/auth", authRoutes);
+
+// app.use("/api/v1/categories", categoryRoutes);
+
+// app.use("/api/v1/products", productRoutes);
+
+// app.use("/api/v1/cart", cartRoutes);
+
+// app.use("/api/v1/wishlist", wishlistRoutes);
+
+// app.use("/api/v1/address", addressRoutes);
+
+// app.use("/api/v1/order", orderRoutes);
+
+// app.use("/api/v1/reviews", reviewRoutes);
+
+// app.use("/api/v1/users", userRoutes);
+
+// app.use("/api/v1/seller", sellerRoutes)
+
+// app.use("/api/v1/admin", adminRoutes);
+
+// app.get("/", (req, res) => {
+//   res.json({ message: "API Running" }); 
+// });
+
+// app.use(errorHandler);
+
+// module.exports = app;
+
+
+
+// ===================================================================================
+
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
 const { apiLimiter } = require("./middlewares/rateLimiter");
 const errorHandler = require("./middlewares/errorHandler");
 const categoryRoutes = require("./routes/categoryRoute");
@@ -13,14 +99,20 @@ const addressRoutes = require("./routes/addressRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const userRoutes = require("./routes/userRoutes");
-const sellerRoutes = require("./routes/sellerRoutes")
+const sellerRoutes = require("./routes/sellerRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+
 const app = express();
+
+// Render / reverse proxy ke liye zaroori (express-rate-limit & secure cookies)
+app.set("trust proxy", 1);
 
 app.use(helmet());
 
-//  app.use(cors())
-const allowedOrigins = [process.env.CLIENT_URL];
+const allowedOrigins = [
+  process.env.CLIENT_URL?.replace(/\/$/, ""),
+  "http://localhost:5173",
+].filter(Boolean);
 
 app.use(
   cors({
@@ -36,44 +128,30 @@ app.use(
 
       return callback(new Error("Not allowed by CORS"));
     },
-
     credentials: true,
-  }),
+  })
 );
 
-// app.use(express.json());
-
-// src/app.js me check aur change karein:
-app.use(express.json({ limit: "10kb" })); // 👈 10kb se badi payload aate hi block ho jayegi
+app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(cookieParser());
 
 app.use("/api", apiLimiter);
 
 app.use("/api/v1/auth", authRoutes);
-
 app.use("/api/v1/categories", categoryRoutes);
-
 app.use("/api/v1/products", productRoutes);
-
 app.use("/api/v1/cart", cartRoutes);
-
 app.use("/api/v1/wishlist", wishlistRoutes);
-
 app.use("/api/v1/address", addressRoutes);
-
 app.use("/api/v1/order", orderRoutes);
-
 app.use("/api/v1/reviews", reviewRoutes);
-
 app.use("/api/v1/users", userRoutes);
-
-app.use("/api/v1/seller", sellerRoutes)
-
+app.use("/api/v1/seller", sellerRoutes);
 app.use("/api/v1/admin", adminRoutes);
 
 app.get("/", (req, res) => {
-  res.json({ message: "API Running" }); 
+  res.json({ message: "API Running" });
 });
 
 app.use(errorHandler);
