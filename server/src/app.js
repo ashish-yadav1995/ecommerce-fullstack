@@ -84,6 +84,83 @@
 
 // ===================================================================================
 
+// const express = require("express");
+// const helmet = require("helmet");
+// const cors = require("cors");
+// const cookieParser = require("cookie-parser");
+// const { apiLimiter } = require("./middlewares/rateLimiter");
+// const errorHandler = require("./middlewares/errorHandler");
+// const categoryRoutes = require("./routes/categoryRoute");
+// const authRoutes = require("./routes/authRoutes");
+// const productRoutes = require("./routes/productRoute");
+// const cartRoutes = require("./routes/cartRoutes");
+// const wishlistRoutes = require("./routes/wishlistRoutes");
+// const addressRoutes = require("./routes/addressRoutes");
+// const orderRoutes = require("./routes/orderRoutes");
+// const reviewRoutes = require("./routes/reviewRoutes");
+// const userRoutes = require("./routes/userRoutes");
+// const sellerRoutes = require("./routes/sellerRoutes");
+// const adminRoutes = require("./routes/adminRoutes");
+
+// const app = express();
+
+// // Render / reverse proxy ke liye zaroori (express-rate-limit & secure cookies)
+// app.set("trust proxy", 1);
+
+// app.use(helmet());
+
+// const allowedOrigins = [
+//   process.env.CLIENT_URL?.replace(/\/$/, ""),
+//   "http://localhost:5173",
+// ].filter(Boolean);
+
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       // Postman / server-to-server requests
+//       if (!origin) {
+//         return callback(null, true);
+//       }
+
+//       if (allowedOrigins.includes(origin)) {
+//         return callback(null, true);
+//       }
+
+//       return callback(new Error("Not allowed by CORS"));
+//     },
+//     credentials: true,
+//   })
+// );
+
+// app.use(express.json({ limit: "10kb" }));
+// app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+// app.use(cookieParser());
+
+// app.use("/api", apiLimiter);
+
+// app.use("/api/v1/auth", authRoutes);
+// app.use("/api/v1/categories", categoryRoutes);
+// app.use("/api/v1/products", productRoutes);
+// app.use("/api/v1/cart", cartRoutes);
+// app.use("/api/v1/wishlist", wishlistRoutes);
+// app.use("/api/v1/address", addressRoutes);
+// app.use("/api/v1/order", orderRoutes);
+// app.use("/api/v1/reviews", reviewRoutes);
+// app.use("/api/v1/users", userRoutes);
+// app.use("/api/v1/seller", sellerRoutes);
+// app.use("/api/v1/admin", adminRoutes);
+
+// app.get("/", (req, res) => {
+//   res.json({ message: "API Running" });
+// });
+
+// app.use(errorHandler);
+
+// module.exports = app;
+
+// ================================================================================
+
+
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
@@ -111,6 +188,7 @@ app.use(helmet());
 
 const allowedOrigins = [
   process.env.CLIENT_URL?.replace(/\/$/, ""),
+  "https://ecommerce-fullstack-pied.vercel.app",
   "http://localhost:5173",
 ].filter(Boolean);
 
@@ -122,7 +200,10 @@ app.use(
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin)) {
+      if (
+        allowedOrigins.includes(origin) ||
+        /^https:\/\/ecommerce-fullstack-.*\.vercel\.app$/.test(origin)
+      ) {
         return callback(null, true);
       }
 
@@ -158,6 +239,7 @@ app.use(errorHandler);
 
 module.exports = app;
 
-// ================================================================================
+
+// ===============================================================================
 
 //  Universal Rule (Hamesha yaad rakhne ke liye)Ownership check tab lagaya jata hai jab:Aap koi aesa operation kar rahe hain jo pehle se maujood data (Existing Resource) ko target kar raha hai.Us data ko target karne ke liye frontend se koi Dynamic ID (req.params ya req.body me) backend par aa rahi hai.Agar aap naya data bana rahe hain (POST / bina kisi purani ID ke), ya fir direct token se data filter kar rahe hain (Address.find({ user: req.user._id })), toh ownership check ki bilkul zaroorat nahi hoti.Bhai, ab aapka ownership validation ka logic poori tarah se crystal clear ho chuka hai!Ab hamara agla mission kya hoga?Kya hum ab naye schema ke mutabik core functionality Place Order API (placeOrder) ka Mongoose transaction aur controller code design karein?Ya fir aap abhi Address API ke saare controllers ko ek baar final code me assemble karna chahte hain?
